@@ -10,8 +10,7 @@
     "test": "npx jest",
     "style": "prettier --write \"src/**/*.{ts,tsx}\""
   },
-  "author": "",
-  "license": "MIT",
+  "author": "ode233",
   "repository": {
     "type": "git",
     "url": "https://github.com/chibat/chrome-extension-typescript-starter.git"
