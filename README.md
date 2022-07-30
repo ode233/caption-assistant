@@ -1,8 +1,8 @@
-# Chrome Caption Extension
+# Chrome Subtitle Extension
 
 ![build](https://github.com/chibat/chrome-extension-typescript-starter/workflows/build/badge.svg)
 
-A Chrome extension that provides caption fixed, jump, translation and other related functions.
+A Chrome extension that provides subtitle fixed, jump, translation and other related functions.
 
 ## Setup
 
