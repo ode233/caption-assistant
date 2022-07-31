@@ -10,10 +10,6 @@ A Chrome extension that provides subtitle fixed, jump, translation and other rel
 npm install
 ```
 
-## Import as Visual Studio Code project
-
-...
-
 ## Build
 
 ```
@@ -22,21 +18,11 @@ npm run build
 
 ## Build in watch mode
 
-### terminal
-
 ```
 npm run watch
 ```
-
-### Visual Studio Code
-
-Run watch mode.
-
-type `Ctrl + Shift + B`
 
 ## Load extension to chrome
 
 Load `dist` directory
 
-## Test
-`npx jest` or `npm run test`
