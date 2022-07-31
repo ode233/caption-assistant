@@ -1,13 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "caption assistant",
-  "description": "caption assistant",
+  "name": "subtitle assistant",
+  "description": "subtitle assistant",
   "version": "1.0",
-  "options_ui": {
-    "page": "options.html"
-  },
   "action": {
-    "default_icon": "icon.png",
+    "default_icon": "assets/icons/icon.png",
     "default_popup": "popup.html"
   },
   "web_accessible_resources": [
@@ -16,7 +13,7 @@
         "https://www.netflix.com/*"
       ],
       "resources": [
-        "js/netflix_accessible_script.js"
+        "inject.js"
       ]
     }
   ],
@@ -26,13 +23,13 @@
         "https://www.netflix.com/watch/*"
       ],
       "js": [
-        "js/vendor.js",
-        "js/content_script.js"
+        "vendor.js",
+        "content_script.js"
       ]
     }
   ],
   "background": {
-    "service_worker": "js/background.js"
+    "service_worker": "background.js"
   },
   "permissions": [
     "storage"
