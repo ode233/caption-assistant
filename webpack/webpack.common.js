@@ -8,8 +8,8 @@ module.exports = {
     entry: {
       popup: path.join(rootDir, 'src', 'pages', 'popup', 'popup.tsx'),
       background: path.join(rootDir, 'src', 'pages', 'background',  'background.ts'),
-      content_script: path.join(rootDir, 'src', 'pages', 'content',  'content_script.tsx'),
-      inject: path.join(rootDir, 'src', 'pages', 'content',  'inject.js'),
+      content_script: path.join(rootDir, 'src', 'pages', 'content',  'content.tsx'),
+      inject: path.join(rootDir, 'src', 'pages', 'content',  'inject.ts'),
     },
     output: {
         path: path.join(rootDir, "dist"),

@@ -24,7 +24,7 @@
       ],
       "js": [
         "vendor.js",
-        "content_script.js"
+        "content.js"
       ]
     }
   ],

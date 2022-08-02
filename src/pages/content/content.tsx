@@ -45,12 +45,5 @@ function processVideo() {
     render(<span>{video.currentTime}</span>, newSubtitleContainer);
 }
 
-const processSubtile = (e: any) => {
-    const { type, data } = e.detail;
-    if (type === "netflix") {
-        console.log(data);
-    }
-}
-
 window.addEventListener('get_subtitle', processSubtile);
 
