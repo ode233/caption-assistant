@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { render } from 'react-dom';
+import { processSubtile, getSubtitleElementStrByTime } from './subtitle';
 
+console.log("inject");
 var s = document.createElement('script');
 s.src = chrome.runtime.getURL('inject.js');
 s.onload = function () {
@@ -8,28 +10,24 @@ s.onload = function () {
 };
 (document.head || document.documentElement).appendChild(s);
 
-console.log("video");
 
-const [video, setVideo] = useState<HTMLVideoElement>();
+window.addEventListener('get_subtitle', processSubtile);
 
 const getVideoInterval = setInterval(getVideo, 200);
 
 function getVideo() {
-    setVideo(document.querySelectorAll('video')[0])
+    let video = document.querySelectorAll('video')[0];
     console.log(video);
     if (!video) {
         return;
     }
     clearInterval(getVideoInterval);
-    processVideo();
+    processVideo(video);
 }
 
-function processVideo() {
+function processVideo(video: HTMLVideoElement) {
     if(!video){
         return
-    }
-    video.ontimeupdate = () => {
-        console.log(video.currentTime);
     }
     console.log("player-timedtext");
     let subtitleContainer = document.getElementsByClassName('player-timedtext')[0];
@@ -42,8 +40,20 @@ function processVideo() {
      text-align: center; letter-spacing: 0!important; font-size: 19px; line-height: normal; color: #ffffff; \
      text-shadow: #000000 0px 0px 7px; font-family: Netflix Sans,Helvetica Nueue,Helvetica,Arial,sans-serif; font-weight: bolder;";
     parentElement.appendChild(newSubtitleContainer);
-    render(<span>{video.currentTime}</span>, newSubtitleContainer);
+    render(<SubtitleElement video={video}></SubtitleElement>, newSubtitleContainer);
 }
 
-window.addEventListener('get_subtitle', processSubtile);
+interface SubtitleElementProps {
+    video: HTMLVideoElement;
+}
+
+function SubtitleElement({ video } : SubtitleElementProps) {
+    const [subtitleElementStr, setSubtitleElementStr] = useState<string>("");
+    video.ontimeupdate = () => {
+        console.log(video.currentTime);
+        setSubtitleElementStr(getSubtitleElementStrByTime(video.currentTime))
+    }
+    return (<div dangerouslySetInnerHTML={{__html: subtitleElementStr}}></div>);
+}
+
 
