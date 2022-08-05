@@ -1,6 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { render } from 'react-dom';
+import ReactDOM from 'react-dom';
 import { processSubtile, getSubtitleElementStrByTime } from './subtitle';
+import styled from 'styled-components';
+
+const Container = styled.div`
+    position: absolute;
+    font-size: xx-large;
+    width: fit-content;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    bottom: 2%;
+`;
 
 console.log('inject');
 let s = document.createElement('script');
@@ -30,14 +42,12 @@ function processVideo(video: HTMLVideoElement) {
     }
     console.log('player-timedtext');
     let subtitleContainer = document.getElementsByClassName('player-timedtext')[0];
-    console.log(subtitleContainer);
-    let parentElement = subtitleContainer.parentElement!;
-    parentElement.removeChild(subtitleContainer);
-    let newSubtitleContainer = document.createElement('div');
-    newSubtitleContainer.style.cssText =
-        'position: absolute; display: block; direction: ltr; text-size-adjust: none; webkit-font-smoothing: antialiased; user-select: none; cursor: none; pointer-events: auto; white-space: nowrap; text-align: center; letter-spacing: 0!important; font-size: 19px; line-height: normal; color: #ffffff; text-shadow: #000000 0px 0px 7px; font-family: Netflix Sans,Helvetica Nueue,Helvetica,Arial,sans-serif; font-weight: bolder;';
-    parentElement.appendChild(newSubtitleContainer);
-    render(<SubtitleElement video={video}></SubtitleElement>, newSubtitleContainer);
+    subtitleContainer.parentElement!.removeChild(subtitleContainer);
+    document.body.style.userSelect = 'text';
+    ReactDOM.render(
+        <SubtitleElement video={video}></SubtitleElement>,
+        document.body.appendChild(document.createElement('div'))
+    );
 }
 
 interface SubtitleElementProps {
@@ -50,5 +60,8 @@ function SubtitleElement({ video }: SubtitleElementProps) {
         console.log(video.currentTime);
         setSubtitleElementStr(getSubtitleElementStrByTime(video.currentTime));
     };
-    return <div dangerouslySetInnerHTML={{ __html: subtitleElementStr }}></div>;
+    return ReactDOM.createPortal(
+        <Container dangerouslySetInnerHTML={{ __html: subtitleElementStr }}></Container>,
+        document.body
+    );
 }
