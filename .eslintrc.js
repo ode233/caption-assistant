@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+const { getWords, getGlobalWords } = require('modules-words');
+
 module.exports = {
     extends: ['alloy', 'alloy/typescript'],
     env: {
@@ -17,9 +20,16 @@ module.exports = {
         //
         // myGlobal: false
     },
+    plugins: ['spellcheck'],
     rules: {
         // 自定义您的规则
         // Customize your rules
-        semi: [1]
+        semi: [1],
+        'spellcheck/spell-checker': [
+            'warn',
+            {
+                skipWords: ['netflix', ...getWords('typescript'), ...getGlobalWords()]
+            }
+        ]
     }
 };

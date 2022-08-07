@@ -3,8 +3,8 @@ function injectXMLHttpRequest(open: any) {
         if (arguments[1]?.includes('nflxvideo.net/?o=1')) {
             this.addEventListener('load', () => {
                 window.dispatchEvent(
-                    new CustomEvent('get_subtitle', {
-                        detail: { type: 'netflix', data: this.response }
+                    new CustomEvent('getSubtitle', {
+                        detail: { site: 'netflix', data: this.response }
                     })
                 );
             });
@@ -14,3 +14,24 @@ function injectXMLHttpRequest(open: any) {
 }
 
 injectXMLHttpRequest(XMLHttpRequest.prototype.open);
+
+let videoPlayer: any = null;
+
+let findVideoPlayer = setInterval(() => {
+    videoPlayer = (window as any).netflix.appContext.state.playerApp.getAPI().videoPlayer;
+    const allSessionIds = videoPlayer.getAllPlayerSessionIds();
+    videoPlayer = videoPlayer.getVideoPlayerBySessionId(allSessionIds[0]);
+    if (!videoPlayer) {
+        return;
+    }
+    clearInterval(findVideoPlayer);
+}, 200);
+
+window.addEventListener('setVideoTime', setVideoTime);
+
+function setVideoTime(e: any) {
+    const { site, time } = e.detail;
+    if (site === 'netflix') {
+        videoPlayer.seek(time);
+    }
+}
