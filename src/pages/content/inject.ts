@@ -35,3 +35,12 @@ function setVideoTime(e: any) {
         videoPlayer.seek(time);
     }
 }
+
+window.addEventListener('pauseVideo', pauseVideo);
+
+function pauseVideo(e: any) {
+    const { site } = e.detail;
+    if (site === 'netflix') {
+        videoPlayer.pause();
+    }
+}

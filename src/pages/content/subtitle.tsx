@@ -59,8 +59,8 @@ function getNextSubtitleTime(nowIndex: number): number | null {
     return subtitle.begin;
 }
 
-function getPrevSubtitleTime(nowIndex: number): number | null {
-    let prevIndex = nowIndex - 1;
+function getPrevSubtitleTime(nowIndex: number, hasSubtitle: boolean): number | null {
+    let prevIndex = hasSubtitle ? nowIndex - 1 : nowIndex;
     if (prevIndex < 0) {
         return null;
     }

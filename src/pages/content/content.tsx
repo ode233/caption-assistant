@@ -8,18 +8,19 @@ import {
 } from './subtitle';
 import styled from 'styled-components';
 
-const WITHOUT_CONTROLLER_BOTTOM = '2%';
-const WITH_CONTROLLER_BOTTOM = '14%';
+const WITHOUT_CONTROLLER_BOTTOM = '6%';
+const WITH_CONTROLLER_BOTTOM = '10%';
 
 const PREV = 'a';
 const NEXT = 'd';
 
+let hasSubtitle = true;
 let nowSubTitleIndex = 0;
 
 const SubtitleWrapper = styled.div(
     () => `
     position: absolute;
-    font-size: xx-large;
+    font-size: xxx-large;
     width: fit-content;
     left: 0;
     right: 0;
@@ -88,7 +89,7 @@ function processVideo(video: HTMLVideoElement) {
         let keyEvent = event as KeyboardEvent;
         switch (keyEvent.key) {
             case PREV: {
-                const time = getPrevSubtitleTime(nowSubTitleIndex);
+                const time = getPrevSubtitleTime(nowSubTitleIndex, hasSubtitle);
                 if (!time) {
                     break;
                 }
@@ -131,14 +132,26 @@ function SubtitleContainer({ video, mountElement }: SubtitleContainerProps) {
     video.ontimeupdate = () => {
         let subtitleElement = getSubtitleElementByTime(video.currentTime);
         if (!subtitleElement) {
+            setSubtitleElementString('');
+            hasSubtitle = false;
             return;
         }
         setSubtitleElementString(subtitleElement.outerHTML);
         nowSubTitleIndex = parseInt(subtitleElement.getAttribute('index')!, 10);
+        hasSubtitle = true;
+    };
+
+    let handleClick = (e: any) => {
+        window.dispatchEvent(
+            new CustomEvent('pauseVideo', {
+                detail: { site: 'netflix' }
+            })
+        );
     };
 
     return ReactDOM.createPortal(
         <SubtitleWrapper
+            onClick={handleClick}
             dangerouslySetInnerHTML={{ __html: subtitleElementString }}
         ></SubtitleWrapper>,
         mountElement
