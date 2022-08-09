@@ -33,6 +33,7 @@ function setVideoTime(e: any) {
     const { site, time } = e.detail;
     if (site === 'netflix') {
         videoPlayer.seek(time);
+        videoPlayer.play();
     }
 }
 

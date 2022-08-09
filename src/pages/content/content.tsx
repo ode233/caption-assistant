@@ -9,7 +9,7 @@ import {
 import styled from 'styled-components';
 
 const WITHOUT_CONTROLLER_BOTTOM = '6%';
-const WITH_CONTROLLER_BOTTOM = '10%';
+const WITH_CONTROLLER_BOTTOM = '8%';
 
 const PREV = 'a';
 const NEXT = 'd';
