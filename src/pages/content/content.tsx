@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, MutableRefObject } from 'react';
 import ReactDOM from 'react-dom';
 import {
     processSubtitle,
-    getSubtitleElementByTime,
+    getSubtitleByTime,
     getPrevSubtitleTime,
     getNextSubtitleTime
 } from './subtitle';
@@ -48,9 +48,8 @@ const observerConfig = {
 };
 
 const videoObserver = new MutationObserver((mutations, observer) => {
-    let url = document.URL;
     let video = document.querySelectorAll('video')[0];
-    if (url.match('https://www.netflix.com/watch/') && video) {
+    if (video) {
         observer.disconnect();
         console.log('processVideo');
         processVideo(video);
@@ -58,6 +57,14 @@ const videoObserver = new MutationObserver((mutations, observer) => {
 });
 
 videoObserver.observe(document, observerConfig);
+
+// find and process video when video url change,
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    // listen for messages sent from background.js
+    if (request.message === 'findVideo!') {
+        videoObserver.observe(document, observerConfig);
+    }
+});
 
 function processVideo(video: HTMLVideoElement) {
     window.dispatchEvent(
@@ -138,15 +145,20 @@ function SubtitleContainer({ video, mountElement }: SubtitleContainerProps) {
     const [subtitleElementString, setSubtitleElementString] = useState<string>('');
 
     video.ontimeupdate = () => {
-        let subtitleElement = getSubtitleElementByTime(video.currentTime);
-        if (!subtitleElement) {
+        let subtitle = getSubtitleByTime(video.currentTime);
+        if (subtitle === null) {
             setSubtitleElementString('');
+            nowSubTitleIndex = -1;
             hasSubtitle = false;
-            return;
+        } else if (video.currentTime > subtitle.end) {
+            setSubtitleElementString('');
+            nowSubTitleIndex = parseInt(subtitle.element.getAttribute('index')!, 10);
+            hasSubtitle = false;
+        } else {
+            setSubtitleElementString(subtitle.element.outerHTML);
+            nowSubTitleIndex = parseInt(subtitle.element.getAttribute('index')!, 10);
+            hasSubtitle = true;
         }
-        setSubtitleElementString(subtitleElement.outerHTML);
-        nowSubTitleIndex = parseInt(subtitleElement.getAttribute('index')!, 10);
-        hasSubtitle = true;
     };
 
     let handleClick = (e: any) => {

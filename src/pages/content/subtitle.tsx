@@ -1,4 +1,5 @@
 class Subtitle {
+    // 秒为单位
     public begin: number;
     public end: number;
     public element: HTMLParagraphElement;
@@ -10,15 +11,21 @@ class Subtitle {
     }
 }
 
-const subtitleList: Subtitle[] = [];
+let subtitleList: Subtitle[] = [];
 
 function processSubtitle(e: any) {
-    const { site, url, data } = e.detail;
+    const { site, data } = e.detail;
     if (site === 'netflix') {
         console.log('process netflix Subtitle');
         const parser = new DOMParser();
-        const subtitlesXML = parser.parseFromString(data, 'text/xml');
-        const subtitleElementList = subtitlesXML.getElementsByTagName('p');
+        const subtitlesHTML = parser.parseFromString(data, 'text/xml');
+        console.log('subtitlesHTML', subtitlesHTML);
+        const subtitleElementList = subtitlesHTML.getElementsByTagName('p');
+        console.log('subtitleElementList', subtitleElementList);
+        if (subtitleElementList.length === 0) {
+            return;
+        }
+        subtitleList = [];
         for (let i = 0; i < subtitleElementList.length; i++) {
             let subtitleElement = subtitleElementList[i];
             const beginString = subtitleElement.getAttribute('begin')?.replace('t', '');
@@ -32,18 +39,24 @@ function processSubtitle(e: any) {
     }
 }
 
-function getSubtitleElementByTime(time: number) {
+// search subtitle by time, If hit, returne the subtitle, otherwise, return the nearest previous subtitle
+function getSubtitleByTime(time: number) {
     return binarySearch(0, subtitleList.length - 1, time);
 }
 
-function binarySearch(i: number, j: number, target: number): HTMLParagraphElement | null {
+function binarySearch(i: number, j: number, target: number): Subtitle | null {
     if (i > j) {
-        return null;
+        let prevIdx = i - 1;
+        if (prevIdx < 0) {
+            return null;
+        }
+        let prevSubtitle = subtitleList[prevIdx];
+        return prevSubtitle;
     }
     let mid = Math.floor(i + (j - i) / 2);
     let subtitle = subtitleList[mid];
     if (target >= subtitle.begin && target < subtitle.end) {
-        return subtitle.element;
+        return subtitle;
     } else if (target < subtitle.begin) {
         return binarySearch(i, mid - 1, target);
     } else {
@@ -69,4 +82,4 @@ function getPrevSubtitleTime(nowIndex: number, hasSubtitle: boolean): number | n
     return subtitle.begin;
 }
 
-export { processSubtitle, getSubtitleElementByTime, getNextSubtitleTime, getPrevSubtitleTime };
+export { processSubtitle, getSubtitleByTime, getNextSubtitleTime, getPrevSubtitleTime };
