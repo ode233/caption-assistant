@@ -48,9 +48,11 @@ const observerConfig = {
 };
 
 const videoObserver = new MutationObserver((mutations, observer) => {
+    let url = document.URL;
     let video = document.querySelectorAll('video')[0];
-    if (video) {
+    if (url.match('https://www.netflix.com/watch/') && video) {
         observer.disconnect();
+        console.log('processVideo');
         processVideo(video);
     }
 });
@@ -58,6 +60,12 @@ const videoObserver = new MutationObserver((mutations, observer) => {
 videoObserver.observe(document, observerConfig);
 
 function processVideo(video: HTMLVideoElement) {
+    window.dispatchEvent(
+        new CustomEvent('getVideoPlayer', {
+            detail: { site: 'netflix' }
+        })
+    );
+
     let originSubtitleElement = document.getElementsByClassName('player-timedtext')[0];
     originSubtitleElement.parentElement!.removeChild(originSubtitleElement);
     document.body.style.userSelect = 'text';
@@ -87,7 +95,7 @@ function processVideo(video: HTMLVideoElement) {
 
     mountElement.addEventListener('keydown', (event) => {
         let keyEvent = event as KeyboardEvent;
-        switch (keyEvent.key) {
+        switch (keyEvent.key.toLowerCase()) {
             case PREV: {
                 const time = getPrevSubtitleTime(nowSubTitleIndex, hasSubtitle);
                 if (!time) {

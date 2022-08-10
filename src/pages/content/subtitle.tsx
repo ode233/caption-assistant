@@ -13,8 +13,9 @@ class Subtitle {
 const subtitleList: Subtitle[] = [];
 
 function processSubtitle(e: any) {
-    const { site, data } = e.detail;
+    const { site, url, data } = e.detail;
     if (site === 'netflix') {
+        console.log('process netflix Subtitle');
         const parser = new DOMParser();
         const subtitlesXML = parser.parseFromString(data, 'text/xml');
         const subtitleElementList = subtitlesXML.getElementsByTagName('p');

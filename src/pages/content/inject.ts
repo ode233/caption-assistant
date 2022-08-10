@@ -17,15 +17,17 @@ injectXMLHttpRequest(XMLHttpRequest.prototype.open);
 
 let videoPlayer: any = null;
 
-let findVideoPlayer = setInterval(() => {
-    videoPlayer = (window as any).netflix.appContext.state.playerApp.getAPI().videoPlayer;
-    const allSessionIds = videoPlayer.getAllPlayerSessionIds();
-    videoPlayer = videoPlayer.getVideoPlayerBySessionId(allSessionIds[0]);
-    if (!videoPlayer) {
-        return;
+window.addEventListener('getVideoPlayer', getVideoPlayer);
+
+function getVideoPlayer(e: any) {
+    const { site } = e.detail;
+    if (site === 'netflix') {
+        videoPlayer = (window as any).netflix.appContext.state.playerApp.getAPI().videoPlayer;
+        const allSessionIds = videoPlayer.getAllPlayerSessionIds();
+        videoPlayer = videoPlayer.getVideoPlayerBySessionId(allSessionIds[0]);
+        console.log('found netflix videoPlay');
     }
-    clearInterval(findVideoPlayer);
-}, 200);
+}
 
 window.addEventListener('setVideoTime', setVideoTime);
 
