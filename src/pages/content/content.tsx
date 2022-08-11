@@ -30,14 +30,15 @@ const SubtitleWrapper = styled.div(
 `
 );
 
+const scriptId = 'subtitle-assistant-script';
+if (document.getElementById(scriptId)) {
+    location.reload();
+}
 console.log('inject');
 let s = document.createElement('script');
+s.id = 'subtitle-assistant-script';
 s.src = chrome.runtime.getURL('inject.js');
-s.onload = function () {
-    s.remove();
-};
 (document.head || document.documentElement).appendChild(s);
-
 window.addEventListener('getSubtitle', processSubtitle);
 
 const observerConfig = {
@@ -57,14 +58,6 @@ const videoObserver = new MutationObserver((mutations, observer) => {
 });
 
 videoObserver.observe(document, observerConfig);
-
-// find and process video when video url change,
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    // listen for messages sent from background.js
-    if (request.message === 'findVideo!') {
-        videoObserver.observe(document, observerConfig);
-    }
-});
 
 function processVideo(video: HTMLVideoElement) {
     window.dispatchEvent(

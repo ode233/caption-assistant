@@ -1,9 +1,12 @@
+let isLoad = false;
+
 function injectXMLHttpRequest(open: any) {
     XMLHttpRequest.prototype.open = function () {
         if (
             arguments[1]?.includes('nflxvideo.net/?o=1') &&
             !arguments[1]?.includes('&random=') &&
-            location.href.match('https://www.netflix.com/watch/')
+            location.href.match('https://www.netflix.com/watch/') &&
+            !isLoad
         ) {
             this.addEventListener('load', () => {
                 window.dispatchEvent(
@@ -12,6 +15,7 @@ function injectXMLHttpRequest(open: any) {
                     })
                 );
             });
+            isLoad = true;
         }
         open.apply(this, arguments);
     };
