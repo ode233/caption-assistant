@@ -28,7 +28,13 @@ module.exports = {
         'spellcheck/spell-checker': [
             'warn',
             {
-                skipWords: ['netflix', ...getWords('typescript'), ...getGlobalWords()]
+                skipWords: [
+                    ...getWords('typescript'),
+                    ...getGlobalWords(),
+                    'href',
+                    'netflix',
+                    'xml'
+                ]
             }
         ]
     }

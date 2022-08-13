@@ -4,7 +4,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.status === 'loading' && tab.url?.match('https://www.netflix.com/watch/')) {
         chrome.scripting.executeScript({
             target: { tabId: tabId },
-            files: ['content.js', 'vendor.js']
+            files: ['netflix/content.js', 'vendor.js']
         });
     }
 });

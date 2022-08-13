@@ -10,7 +10,7 @@
     "web_accessible_resources": [
         {
             "matches": ["https://www.netflix.com/*"],
-            "resources": ["inject.js"]
+            "resources": ["netflix/inject.js"]
         }
     ],
     "background": {
