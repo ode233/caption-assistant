@@ -26,3 +26,6 @@ npm run watch
 
 Load `dist` directory
 
+## Architecture
+
+![Architecture](subtitle-assistant-architecture.png)

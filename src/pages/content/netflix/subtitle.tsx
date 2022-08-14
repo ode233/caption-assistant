@@ -1,12 +1,12 @@
-import { Subtitle } from '../definition';
+import { SubtitleNode } from '../definition';
 
-let subtitleList: Array<Subtitle> = [];
+let subtitleNodeList: Array<SubtitleNode> = [];
 
-function getSubtitleList(e: any) {
+function getSubtitleNodeList(e: any) {
     const { xml } = e.detail;
     const parser = new DOMParser();
-    const subtitlesHTML = parser.parseFromString(xml, 'text/xml');
-    const subtitleElementList = subtitlesHTML.getElementsByTagName('p');
+    const subtitleHTML = parser.parseFromString(xml, 'text/xml');
+    const subtitleElementList = subtitleHTML.getElementsByTagName('p');
     console.log('subtitleElementList', subtitleElementList);
     if (subtitleElementList.length === 0) {
         return;
@@ -18,9 +18,9 @@ function getSubtitleList(e: any) {
         const endString = subtitleElement.getAttribute('end')?.replace('t', '');
         const end = Number(endString) / 10 ** 7;
         subtitleElement.setAttribute('index', i.toString());
-        let subtitle = new Subtitle(begin, end, subtitleElement);
-        subtitleList.push(subtitle);
+        let subtitle = new SubtitleNode(begin, end, subtitleElement);
+        subtitleNodeList.push(subtitle);
     }
 }
 
-export { getSubtitleList, subtitleList };
+export { getSubtitleNodeList, subtitleNodeList };

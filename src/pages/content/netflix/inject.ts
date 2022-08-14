@@ -10,7 +10,7 @@ function injectXMLHttpRequest(open: any) {
         ) {
             this.addEventListener('load', () => {
                 window.dispatchEvent(
-                    new CustomEvent('getSubtitleList', {
+                    new CustomEvent('getSubtitleNodeList', {
                         detail: { xml: this.response }
                     })
                 );

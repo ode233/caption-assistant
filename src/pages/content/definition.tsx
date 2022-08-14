@@ -11,7 +11,7 @@ const NEXT = 'd';
 interface SubtitleContainerProps {
     video: Video;
     mountElement: Element;
-    subtitles: Subtitles;
+    subtitle: Subtitle;
 }
 
 const SubtitleWrapper = styled.div(
@@ -27,7 +27,7 @@ const SubtitleWrapper = styled.div(
 `
 );
 
-class Subtitle {
+class SubtitleNode {
     // second
     public begin: number;
     public end: number;
@@ -40,39 +40,39 @@ class Subtitle {
     }
 }
 
-class Subtitles {
-    public subtitleList: Array<Subtitle> = [];
+class Subtitle {
+    public subtitleNodeList: Array<SubtitleNode> = [];
 
-    public hasSubtitle = true;
-    public nowSubTitleIndex = 0;
+    public nowHasSubtitle = false;
+    public nowSubTitleIndex = -1;
 
-    public constructor(subtitleList: Array<Subtitle>) {
-        this.subtitleList = subtitleList;
+    public constructor(subtitleNodeList: Array<SubtitleNode>) {
+        this.subtitleNodeList = subtitleNodeList;
     }
 
     public getSubtitleByTime(time: number) {
-        return this.binarySearch(0, this.subtitleList.length - 1, time);
+        return this.binarySearch(0, this.subtitleNodeList.length - 1, time);
     }
 
     public getNextSubtitleTime(): number | null {
         let nextIndex = this.nowSubTitleIndex + 1;
-        if (nextIndex >= this.subtitleList.length) {
+        if (nextIndex >= this.subtitleNodeList.length) {
             return null;
         }
-        let subtitle = this.subtitleList[nextIndex];
+        let subtitle = this.subtitleNodeList[nextIndex];
         return subtitle.begin;
     }
 
     public getPrevSubtitleTime(): number | null {
-        let prevIndex = this.hasSubtitle ? this.nowSubTitleIndex - 1 : this.nowSubTitleIndex;
+        let prevIndex = this.nowHasSubtitle ? this.nowSubTitleIndex - 1 : this.nowSubTitleIndex;
         if (prevIndex < 0) {
             return null;
         }
-        let subtitle = this.subtitleList[prevIndex];
+        let subtitle = this.subtitleNodeList[prevIndex];
         return subtitle.begin;
     }
 
-    public SubtitleContainer({ video, mountElement, subtitles }: SubtitleContainerProps) {
+    public SubtitleContainer({ video, mountElement, subtitle }: SubtitleContainerProps) {
         const [subtitleElementString, setSubtitleElementString] = useState<string>('');
 
         useEffect(() => {
@@ -80,26 +80,26 @@ class Subtitles {
 
             video.setOntimeupdate(() => {
                 const currentTime = video.getCurrentTime();
-                let subtitle = subtitles.getSubtitleByTime(currentTime);
+                let subtitleNode = subtitle.getSubtitleByTime(currentTime);
 
-                if (subtitle === null) {
+                if (subtitleNode === null) {
                     setSubtitleElementString('');
-                    subtitles.nowSubTitleIndex = -1;
-                    subtitles.hasSubtitle = false;
-                } else if (currentTime > subtitle.end) {
+                    subtitle.nowSubTitleIndex = -1;
+                    subtitle.nowHasSubtitle = false;
+                } else if (currentTime > subtitleNode.end) {
                     setSubtitleElementString('');
-                    subtitles.nowSubTitleIndex = parseInt(
-                        subtitle.element.getAttribute('index')!,
+                    subtitle.nowSubTitleIndex = parseInt(
+                        subtitleNode.element.getAttribute('index')!,
                         10
                     );
-                    subtitles.hasSubtitle = false;
+                    subtitle.nowHasSubtitle = false;
                 } else {
-                    setSubtitleElementString(subtitle.element.outerHTML);
-                    subtitles.nowSubTitleIndex = parseInt(
-                        subtitle.element.getAttribute('index')!,
+                    setSubtitleElementString(subtitleNode.element.outerHTML);
+                    subtitle.nowSubTitleIndex = parseInt(
+                        subtitleNode.element.getAttribute('index')!,
                         10
                     );
-                    subtitles.hasSubtitle = true;
+                    subtitle.nowHasSubtitle = true;
                 }
             });
 
@@ -107,7 +107,7 @@ class Subtitles {
                 let keyEvent = event as KeyboardEvent;
                 switch (keyEvent.key.toLowerCase()) {
                     case PREV: {
-                        const time = subtitles.getPrevSubtitleTime();
+                        const time = subtitle.getPrevSubtitleTime();
                         if (!time) {
                             break;
                         }
@@ -116,7 +116,7 @@ class Subtitles {
                         break;
                     }
                     case NEXT: {
-                        const time = subtitles.getNextSubtitleTime();
+                        const time = subtitle.getNextSubtitleTime();
                         if (!time) {
                             break;
                         }
@@ -141,17 +141,17 @@ class Subtitles {
         );
     }
 
-    private binarySearch(i: number, j: number, target: number): Subtitle | null {
+    private binarySearch(i: number, j: number, target: number): SubtitleNode | null {
         if (i > j) {
             let prevIdx = i - 1;
             if (prevIdx < 0) {
                 return null;
             }
-            let prevSubtitle = this.subtitleList[prevIdx];
+            let prevSubtitle = this.subtitleNodeList[prevIdx];
             return prevSubtitle;
         }
         let mid = Math.floor(i + (j - i) / 2);
-        let subtitle = this.subtitleList[mid];
+        let subtitle = this.subtitleNodeList[mid];
         if (target >= subtitle.begin && target < subtitle.end) {
             return subtitle;
         } else if (target < subtitle.begin) {
@@ -170,4 +170,4 @@ interface Video {
     setOntimeupdate: (f: any) => void;
 }
 
-export { Subtitle, Subtitles, Video };
+export { SubtitleNode, Subtitle, Video };

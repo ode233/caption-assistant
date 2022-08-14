@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Subtitles } from '../definition';
-import { getSubtitleList, subtitleList } from './subtitle';
+import { Subtitle } from '../definition';
+import { getSubtitleNodeList, subtitleNodeList } from './subtitle';
 import { NetflixVideo } from './video';
 
 const WITHOUT_CONTROLLER_BOTTOM = '6%';
@@ -17,7 +17,7 @@ s.id = 'subtitle-assistant-script';
 s.src = chrome.runtime.getURL('netflix/inject.js');
 (document.head || document.documentElement).appendChild(s);
 
-window.addEventListener('getSubtitleList', getSubtitleList);
+window.addEventListener('getSubtitleNodeList', getSubtitleNodeList);
 
 const observerConfig = {
     attributes: false,
@@ -44,14 +44,14 @@ const videoObserver = new MutationObserver((mutations, observer) => {
     document.body.style.userSelect = 'text';
     let mountElement = document.getElementsByClassName('watch-video--player-view')[0];
 
-    let subtitles = new Subtitles(subtitleList);
+    let subtitle = new Subtitle(subtitleNodeList);
 
     ReactDOM.render(
-        <subtitles.SubtitleContainer
+        <subtitle.SubtitleContainer
             video={netflixVideo}
             mountElement={mountElement}
-            subtitles={subtitles}
-        ></subtitles.SubtitleContainer>,
+            subtitle={subtitle}
+        ></subtitle.SubtitleContainer>,
         document.body.appendChild(document.createElement('div'))
     );
 
