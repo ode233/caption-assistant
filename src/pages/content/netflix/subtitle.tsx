@@ -7,7 +7,6 @@ function getSubtitleNodeList(e: any) {
     const parser = new DOMParser();
     const subtitleHTML = parser.parseFromString(xml, 'text/xml');
     const subtitleElementList = subtitleHTML.getElementsByTagName('p');
-    console.log('subtitleElementList', subtitleElementList);
     if (subtitleElementList.length === 0) {
         return;
     }
@@ -21,7 +20,6 @@ function getSubtitleNodeList(e: any) {
         let subtitle = new SubtitleNode(begin, end, subtitleElement);
         subtitleNodeList.push(subtitle);
     }
-    console.log(subtitleNodeList);
 }
 
 function getNewSubtitleElement(
@@ -34,12 +32,20 @@ function getNewSubtitleElement(
     let newSpan = document.createElement('span');
     newSpan.style.whiteSpace = 'pre-line';
     let text = '';
-    let spanList = subtitleElement.getElementsByTagName('span');
-    for (let i = 0; i < spanList.length - 1; i++) {
-        let span = spanList[i];
-        text += span.textContent + '&#10;';
+    for (let node of subtitleElement.childNodes) {
+        switch (node.nodeName) {
+            case 'span': {
+                text += node.textContent;
+                break;
+            }
+            case 'br': {
+                text += '&#10;';
+                break;
+            }
+            default:
+                break;
+        }
     }
-    text += spanList[spanList.length - 1].textContent;
     newSpan.innerHTML = text;
     newSubtitleElement.appendChild(newSpan);
 
