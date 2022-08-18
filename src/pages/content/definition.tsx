@@ -3,7 +3,7 @@ import { useState } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 
-const SUBTITLE_CONTAINER_ID = 'subtitle-assistant-container';
+const SUBTITLE_WRAPPER_ID = 'subtitle-assistant-wrapper';
 
 const PREV = 'a';
 const NEXT = 'd';
@@ -136,6 +136,7 @@ class Subtitle {
                     video.pause();
                 }}
                 dangerouslySetInnerHTML={{ __html: subtitleElementString }}
+                id={SUBTITLE_WRAPPER_ID}
             ></SubtitleWrapper>,
             mountElement
         );
@@ -170,4 +171,4 @@ interface Video {
     setOntimeupdate: (f: any) => void;
 }
 
-export { SubtitleNode, Subtitle, Video };
+export { SubtitleNode, Subtitle, Video, SUBTITLE_WRAPPER_ID };
