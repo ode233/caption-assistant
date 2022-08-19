@@ -8,9 +8,6 @@ const WITHOUT_CONTROLLER_BOTTOM = '6%';
 const WITH_CONTROLLER_BOTTOM = '8%';
 
 const scriptId = 'subtitle-assistant-script';
-if (document.getElementById(scriptId)) {
-    location.reload();
-}
 console.log('inject');
 let s = document.createElement('script');
 s.id = 'subtitle-assistant-script';
@@ -27,12 +24,18 @@ const observerConfig = {
 };
 
 const documentObserver = new MutationObserver((mutations, observer) => {
+    // check subtitle element
+    // TODO review redirect
+    let subtitleWrapper = document.getElementById(SUBTITLE_WRAPPER_ID);
+    if (subtitleWrapper) {
+        return;
+    }
+
     // get video player
     let video = document.querySelectorAll('video')[0];
     if (!video) {
         return;
     }
-    observer.disconnect();
     console.log('processVideo');
 
     window.dispatchEvent(new CustomEvent('getVideoPlayer'));
@@ -57,13 +60,6 @@ const documentObserver = new MutationObserver((mutations, observer) => {
 
     const subtitleContainer = mountElement.lastElementChild as HTMLElement;
     const videoPlayerViewObserver = new MutationObserver((mutations, observer) => {
-        // check subtitle element
-        // TODO review redirect
-        let subtitleWrapper = document.getElementById(SUBTITLE_WRAPPER_ID);
-        if (!subtitleWrapper) {
-            location.reload();
-        }
-
         // dynamic adjust subtitle container bottom
         let videoController = mountElement.getElementsByClassName(
             'watch-video--bottom-controls-container'

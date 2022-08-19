@@ -1,8 +1,12 @@
-import { SubtitleNode } from '../definition';
+import { SubtitleNode, SUBTITLE_WRAPPER_ID } from '../definition';
 
 let subtitleNodeList: Array<SubtitleNode> = [];
 
 function getSubtitleNodeList(e: any) {
+    let subtitleWrapper = document.getElementById(SUBTITLE_WRAPPER_ID);
+    if (subtitleWrapper) {
+        return;
+    }
     const { xml } = e.detail;
     const parser = new DOMParser();
     const subtitleHTML = parser.parseFromString(xml, 'text/xml');
