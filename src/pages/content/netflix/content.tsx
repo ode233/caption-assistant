@@ -8,6 +8,10 @@ const WITHOUT_CONTROLLER_BOTTOM = '6%';
 const WITH_CONTROLLER_BOTTOM = '8%';
 
 const scriptId = 'subtitle-assistant-script';
+// trigger when click next
+if (document.getElementById(scriptId)) {
+    location.reload();
+}
 console.log('inject');
 let s = document.createElement('script');
 s.id = 'subtitle-assistant-script';

@@ -14,6 +14,7 @@ function getSubtitleNodeList(e: any) {
     if (subtitleElementList.length === 0) {
         return;
     }
+    subtitleNodeList = [];
     for (let i = 0; i < subtitleElementList.length; i++) {
         let subtitleElement = subtitleElementList[i];
         const beginString = subtitleElement.getAttribute('begin')?.replace('t', '');
@@ -24,6 +25,7 @@ function getSubtitleNodeList(e: any) {
         let subtitle = new SubtitleNode(begin, end, subtitleElement);
         subtitleNodeList.push(subtitle);
     }
+    console.log('getSubtitleNodeList', subtitleNodeList);
 }
 
 function getNewSubtitleElement(
