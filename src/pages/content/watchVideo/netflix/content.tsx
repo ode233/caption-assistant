@@ -15,7 +15,7 @@ if (document.getElementById(scriptId)) {
 console.log('inject');
 let s = document.createElement('script');
 s.id = 'subtitle-assistant-script';
-s.src = chrome.runtime.getURL('netflix/inject.js');
+s.src = chrome.runtime.getURL('watchVideo/netflix/inject.js');
 (document.head || document.documentElement).appendChild(s);
 
 window.addEventListener('getSubtitleNodeList', getSubtitleNodeList);
@@ -65,19 +65,14 @@ const documentObserver = new MutationObserver((mutations, observer) => {
     const subtitleContainer = mountElement.lastElementChild as HTMLElement;
     const videoPlayerViewObserver = new MutationObserver((mutations, observer) => {
         // dynamic adjust subtitle container bottom
-        let videoController = mountElement.getElementsByClassName(
-            'watch-video--bottom-controls-container'
-        )[0];
+        let videoController = mountElement.getElementsByClassName('watch-video--bottom-controls-container')[0];
         if (videoController) {
             subtitleContainer.style.bottom = WITH_CONTROLLER_BOTTOM;
         } else {
             subtitleContainer.style.bottom = WITHOUT_CONTROLLER_BOTTOM;
         }
     });
-    videoPlayerViewObserver.observe(
-        document.getElementsByClassName('watch-video--player-view')[0],
-        observerConfig
-    );
+    videoPlayerViewObserver.observe(document.getElementsByClassName('watch-video--player-view')[0], observerConfig);
 });
 
 documentObserver.observe(document, observerConfig);

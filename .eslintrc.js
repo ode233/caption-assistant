@@ -29,11 +29,19 @@ module.exports = {
             'warn',
             {
                 skipWords: [
+                    ...getWords('axios'),
                     ...getWords('typescript'),
                     ...getGlobalWords(),
                     'href',
                     'netflix',
-                    'xml'
+                    'xml',
+                    'br',
+                    'player-timedtext',
+                    'webextensions',
+                    'globals',
+                    'tsx',
+                    'youdao',
+                    'tgt'
                 ]
             }
         ]

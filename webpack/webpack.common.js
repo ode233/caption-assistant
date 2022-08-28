@@ -6,10 +6,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const rootDir = path.join(__dirname, '..');
 module.exports = {
     entry: {
-        popup: path.join(rootDir, 'src', 'pages', 'popup', 'popup.tsx'),
-        background: path.join(rootDir, 'src', 'pages', 'background', 'background.ts'),
-        '/netflix/content': path.join(rootDir, 'src', 'pages', 'content', 'netflix', 'content.tsx'),
-        '/netflix/inject': path.join(rootDir, 'src', 'pages', 'content', 'netflix', 'inject.ts')
+        popup: path.join(rootDir, 'src/pages/popup/popup.tsx'),
+        background: path.join(rootDir, 'src/pages/background/background.ts'),
+        '/watchVideo/netflix/content': path.join(rootDir, 'src/pages/content/watchVideo/netflix/content.tsx'),
+        '/watchVideo/netflix/inject': path.join(rootDir, 'src/pages/content/watchVideo/netflix/inject.ts'),
+        '/translate/content': path.join(rootDir, 'src/pages/content/translate/content.tsx')
     },
     output: {
         path: path.join(rootDir, 'dist'),

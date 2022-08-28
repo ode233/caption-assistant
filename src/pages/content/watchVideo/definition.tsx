@@ -14,8 +14,7 @@ interface SubtitleContainerProps {
     subtitle: Subtitle;
 }
 
-const SubtitleWrapper = styled.div(
-    () => `
+const SubtitleWrapper = styled.div`
     position: absolute;
     font-size: xxx-large;
     width: fit-content;
@@ -24,8 +23,7 @@ const SubtitleWrapper = styled.div(
     margin-left: auto;
     margin-right: auto;
     bottom: '6%';
-`
-);
+`;
 
 class SubtitleNode {
     // second
@@ -88,17 +86,11 @@ class Subtitle {
                     subtitle.nowHasSubtitle = false;
                 } else if (currentTime > subtitleNode.end) {
                     setSubtitleElementString('');
-                    subtitle.nowSubTitleIndex = parseInt(
-                        subtitleNode.element.getAttribute('index')!,
-                        10
-                    );
+                    subtitle.nowSubTitleIndex = parseInt(subtitleNode.element.getAttribute('index')!, 10);
                     subtitle.nowHasSubtitle = false;
                 } else {
                     setSubtitleElementString(subtitleNode.element.outerHTML);
-                    subtitle.nowSubTitleIndex = parseInt(
-                        subtitleNode.element.getAttribute('index')!,
-                        10
-                    );
+                    subtitle.nowSubTitleIndex = parseInt(subtitleNode.element.getAttribute('index')!, 10);
                     subtitle.nowHasSubtitle = true;
                 }
             });

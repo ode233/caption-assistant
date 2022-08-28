@@ -28,10 +28,7 @@ function getSubtitleNodeList(e: any) {
     console.log('getSubtitleNodeList', subtitleNodeList);
 }
 
-function getNewSubtitleElement(
-    subtitleElement: HTMLParagraphElement,
-    index: number
-): HTMLParagraphElement {
+function getNewSubtitleElement(subtitleElement: HTMLParagraphElement, index: number): HTMLParagraphElement {
     let newSubtitleElement = document.createElement('p');
     newSubtitleElement.setAttribute('index', index.toString());
 
