@@ -29,6 +29,7 @@ module.exports = {
             'warn',
             {
                 skipWords: [
+                    ...getWords('react-icons/bs'),
                     ...getWords('axios'),
                     ...getWords('typescript'),
                     ...getGlobalWords(),
