@@ -42,7 +42,8 @@ module.exports = {
                     'globals',
                     'tsx',
                     'youdao',
-                    'tgt'
+                    'tgt',
+                    'anki'
                 ]
             }
         ]
