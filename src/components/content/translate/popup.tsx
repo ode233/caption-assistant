@@ -1,9 +1,19 @@
-import React, { useEffect, useRef } from 'react';
+import React, { MouseEventHandler, useEffect, useRef } from 'react';
 import { useState } from 'react';
 import styled from 'styled-components';
 import { getText, getSentence } from 'get-selection-more';
 import { BsVolumeUpFill, BsXLg } from 'react-icons/bs';
 import { BiExport } from 'react-icons/bi';
+import { css } from '@emotion/react';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
+import { render } from 'react-dom';
+import { display } from '@mui/system';
 
 const dictPopupWidth = 400;
 const dictPopupHeight = 300;
@@ -11,23 +21,91 @@ const dictPopupHeight = 300;
 const ankiPopupWidth = 500;
 const ankiPopupHeight = 800;
 
-// eslint-disable-next-line spellcheck/spell-checker
-const DictPopupWrapper = styled.div<{ display: string; left: number; top: number }>`
-    overflow: auto;
-    position: absolute;
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: ${dictPopupWidth + 'px'};
-    height: ${dictPopupHeight + 'px'};
-    z-index: 10001;
-    display: ${(props) => props.display};
-    left: ${(props) => props.left + 'px'};
-    top: ${(props) => props.top + 'px'};
-`;
+interface DictPopupProps {
+    display: string;
+    left: number;
+    top: number;
+    text: string;
+    phonetic: string;
+    textTranslate: string;
+    textVoiceUrl: string;
+    sentence: string;
+    sentenceTranslate: string;
+    sentenceVoiceUrl: string;
+    onClickExportToAnki: MouseEventHandler;
+}
 
-// eslint-disable-next-line spellcheck/spell-checker
+const DictPopup = ({
+    display,
+    left,
+    top,
+    text,
+    phonetic,
+    textTranslate,
+    textVoiceUrl,
+    sentence,
+    sentenceTranslate,
+    sentenceVoiceUrl,
+    onClickExportToAnki
+}: DictPopupProps) => {
+    return (
+        <div
+            css={css`
+                overflow: auto;
+                position: absolute;
+                background-color: #fefefe;
+                margin: auto;
+                padding: 20px;
+                border: 1px solid rgba(0, 0, 0, 0.12);
+                width: ${dictPopupWidth + 'px'};
+                height: ${dictPopupHeight + 'px'};
+                z-index: 10001;
+                display: ${display};
+                left: ${left + 'px'};
+                top: ${top + 'px'};
+            `}
+        >
+            <div>
+                <Text style={{ marginTop: '0px' }}>
+                    {text}&nbsp;&nbsp;&nbsp;&nbsp;{phonetic}&nbsp;&nbsp;&nbsp;&nbsp;
+                    <BsVolumeUpFill
+                        style={{ fontSize: 'larger', verticalAlign: 'bottom' }}
+                        onClick={() => {
+                            let audio = new Audio(textVoiceUrl);
+                            audio.play();
+                        }}
+                    />
+                </Text>
+                <Text>{textTranslate}</Text>
+                <BiExport
+                    style={{
+                        top: '20px',
+                        right: '20px',
+                        position: 'absolute',
+                        fontSize: 'larger',
+                        verticalAlign: 'bottom'
+                    }}
+                    onClick={onClickExportToAnki}
+                />
+            </div>
+            <Divider />
+            <div>
+                <Text>
+                    {sentence}&nbsp;&nbsp;&nbsp;&nbsp;
+                    <BsVolumeUpFill
+                        style={{ fontSize: 'larger', verticalAlign: 'text-bottom' }}
+                        onClick={() => {
+                            let audio = new Audio(sentenceVoiceUrl);
+                            audio.play();
+                        }}
+                    />
+                </Text>
+                <Text style={{ marginBottom: '0px' }}>{sentenceTranslate}</Text>
+            </div>
+        </div>
+    );
+};
+
 const AnkiPopupWrapper = styled.div<{ display: string }>`
     overflow: auto;
     position: absolute;
@@ -49,6 +127,7 @@ const Text = styled.h3`
     font-size: large;
     font-weight: normal;
     font-family: sans-serif;
+    margin: 18px 0px;
 `;
 
 const Popup = () => {
@@ -80,6 +159,7 @@ const Popup = () => {
             if (!text) {
                 return;
             }
+            setPhonetic('');
             if (isWord(text)) {
                 fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${text}`)
                     .then((response) => {
@@ -121,6 +201,7 @@ const Popup = () => {
                     display === 'block'
                 ) {
                     window.getSelection()?.removeAllRanges();
+                    console.log('event.pageX < leftRef');
                     return 'none';
                 }
                 return display;
@@ -129,51 +210,27 @@ const Popup = () => {
     }, []);
 
     let onClickExportToAnki = () => {
+        console.log('onClickExportToAnki');
+
         setDictDisplay('none');
         setAnkiDisplay('block');
     };
 
     return (
         <div>
-            <DictPopupWrapper display={dictDisplay} left={left} top={top}>
-                <Text>
-                    {text}
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                    {phonetic}
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                    <BsVolumeUpFill
-                        style={{ fontSize: 'larger', verticalAlign: 'text-bottom' }}
-                        onClick={() => {
-                            let audio = new Audio(textVoiceUrl);
-                            audio.play();
-                        }}
-                    />
-                    <BiExport
-                        style={{
-                            right: 0,
-                            marginRight: '30px',
-                            position: 'absolute',
-                            fontSize: 'larger',
-                            verticalAlign: 'text-bottom'
-                        }}
-                        onClick={onClickExportToAnki}
-                    />
-                </Text>
-                <Text style={{ marginTop: '15px' }}>{textTranslate}</Text>
-                <hr style={{ marginTop: '20px', marginBottom: '20px', borderBottom: '1px solid black' }} />
-                <Text>
-                    {sentence}
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                    <BsVolumeUpFill
-                        style={{ fontSize: 'larger', verticalAlign: 'text-bottom' }}
-                        onClick={() => {
-                            let audio = new Audio(sentenceVoiceUrl);
-                            audio.play();
-                        }}
-                    />
-                </Text>
-                <Text style={{ marginTop: '15px' }}>{sentenceTranslate}</Text>
-            </DictPopupWrapper>
+            <DictPopup
+                display={dictDisplay}
+                left={left}
+                top={top}
+                text={text}
+                phonetic={phonetic}
+                textTranslate={textTranslate}
+                textVoiceUrl={textVoiceUrl}
+                sentence={sentence}
+                sentenceTranslate={sentenceTranslate}
+                sentenceVoiceUrl={sentenceVoiceUrl}
+                onClickExportToAnki={onClickExportToAnki}
+            ></DictPopup>
             <AnkiPopupWrapper display={ankiDisplay}>
                 <BsXLg
                     style={{ right: 0, marginRight: '20px', position: 'absolute', fontSize: 'larger' }}

@@ -29,6 +29,7 @@ module.exports = {
             'warn',
             {
                 skipWords: [
+                    ...getWords('@emotion/react'),
                     ...getWords('react-icons/bs'),
                     ...getWords('axios'),
                     ...getWords('typescript'),
@@ -43,7 +44,8 @@ module.exports = {
                     'tsx',
                     'youdao',
                     'tgt',
-                    'anki'
+                    'anki',
+                    'fefefe'
                 ]
             }
         ]

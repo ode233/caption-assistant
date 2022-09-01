@@ -6,11 +6,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const rootDir = path.join(__dirname, '..');
 module.exports = {
     entry: {
-        popup: path.join(rootDir, 'src/pages/popup/popup.tsx'),
-        background: path.join(rootDir, 'src/pages/background/background.ts'),
-        '/watchVideo/netflix/content': path.join(rootDir, 'src/pages/content/watchVideo/netflix/content.tsx'),
-        '/watchVideo/netflix/inject': path.join(rootDir, 'src/pages/content/watchVideo/netflix/inject.ts'),
-        '/translate/content': path.join(rootDir, 'src/pages/content/translate/content.tsx')
+        popup: path.join(rootDir, 'src/components/popup/popup.tsx'),
+        background: path.join(rootDir, 'src/components/background/background.ts'),
+        '/watchVideo/netflix/content': path.join(rootDir, 'src/components/content/watchVideo/netflix/content.tsx'),
+        '/watchVideo/netflix/inject': path.join(rootDir, 'src/components/content/watchVideo/netflix/inject.ts'),
+        '/translate/content': path.join(rootDir, 'src/components/content/translate/content.tsx')
     },
     output: {
         path: path.join(rootDir, 'dist'),
@@ -30,6 +30,21 @@ module.exports = {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
                 exclude: /node_modules/
+            },
+            {
+                test: /\.scss$/,
+                exclude: /node_modules/,
+                use: [
+                    {
+                        loader: 'style-loader' // Creates style nodes from JS strings
+                    },
+                    {
+                        loader: 'css-loader' // Translates CSS into CommonJS
+                    },
+                    {
+                        loader: 'sass-loader' // Compiles Sass to CSS
+                    }
+                ]
             }
         ]
     },
@@ -66,7 +81,7 @@ module.exports = {
             ]
         }),
         new HtmlWebpackPlugin({
-            template: path.join(rootDir, 'src', 'pages', 'popup', 'popup.html'),
+            template: path.join(rootDir, 'src', 'components', 'popup', 'popup.html'),
             filename: 'popup.html',
             chunks: ['popup'],
             cache: false
