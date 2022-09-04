@@ -1,22 +1,23 @@
-import React, { MouseEventHandler, useEffect, useRef } from 'react';
+import { MouseEventHandler, useEffect, useRef } from 'react';
 import { useState } from 'react';
 import styled from 'styled-components';
 import { getText, getSentence } from 'get-selection-more';
 import { BsVolumeUpFill, BsXLg } from 'react-icons/bs';
 import { BiExport } from 'react-icons/bi';
 import { css } from '@emotion/react';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
 import Divider from '@mui/material/Divider';
-import Typography from '@mui/material/Typography';
-import { render } from 'react-dom';
-import { display } from '@mui/system';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Button from '@mui/material/Button';
 
-const dictPopupWidth = 400;
-const dictPopupHeight = 300;
+const leftClick = 0;
+
+const dictPopupWidth = 420;
+const dictPopupHeight = 320;
 
 const ankiPopupWidth = 500;
 const ankiPopupHeight = 800;
@@ -51,8 +52,9 @@ const DictPopup = ({
     return (
         <div
             css={css`
+                box-sizing: border-box;
                 overflow: auto;
-                position: absolute;
+                position: fixed;
                 background-color: #fefefe;
                 margin: auto;
                 padding: 20px;
@@ -106,22 +108,52 @@ const DictPopup = ({
     );
 };
 
-const AnkiPopupWrapper = styled.div<{ display: string }>`
-    overflow: auto;
-    position: absolute;
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: ${ankiPopupWidth + 'px'};
-    height: ${ankiPopupHeight + 'px'};
-    z-index: 10001;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    display: ${(props) => props.display};
-`;
+interface AnkiPopupProps {
+    open: boolean;
+    text: string;
+    phonetic: string;
+    textTranslate: string;
+    textVoiceUrl: string;
+    sentence: string;
+    sentenceTranslate: string;
+    sentenceVoiceUrl: string;
+    onClose: MouseEventHandler;
+}
+
+const AnkiPopupWrapper = ({
+    open,
+    text,
+    phonetic,
+    textTranslate,
+    textVoiceUrl,
+    sentence,
+    sentenceTranslate,
+    sentenceVoiceUrl,
+    onClose
+}: AnkiPopupProps) => {
+    return (
+        <Dialog
+            open={open}
+            css={css`
+                bottom: 200px;
+            `}
+        >
+            <DialogContent
+                css={css`
+                    overflow: auto;
+                    width: ${ankiPopupWidth + 'px'};
+                    height: ${ankiPopupHeight + 'px'};
+                `}
+            >
+                <TextField fullWidth label="单词" value={text} variant="standard" />
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onClose}>关闭</Button>
+                <Button onClick={onClose}>导出至Anki</Button>
+            </DialogActions>
+        </Dialog>
+    );
+};
 
 const Text = styled.h3`
     font-size: large;
@@ -143,18 +175,23 @@ const Popup = () => {
     const [sentenceTranslate, setSentenceTranslate] = useState<string>('');
     const [sentenceVoiceUrl, setSentenceVoiceUrl] = useState<string>('');
 
-    const [ankiDisplay, setAnkiDisplay] = useState<string>('none');
+    const [ankiOpen, setAnkiOpen] = useState(false);
 
     const leftRef = useRef(left);
     const topRef = useRef(top);
+    const ankiOpenRef = useRef(ankiOpen);
 
     useEffect(() => {
         leftRef.current = left;
         topRef.current = top;
+        ankiOpenRef.current = ankiOpen;
     });
 
     useEffect(() => {
         document.addEventListener('mouseup', (event: MouseEvent) => {
+            if (ankiOpenRef.current) {
+                return;
+            }
             let text = getText();
             if (!text) {
                 return;
@@ -186,22 +223,24 @@ const Popup = () => {
             setTextVoiceUrl(`https://dict.youdao.com/dictvoice?type=0&audio=${text}`);
             setSentence(sentence);
             setSentenceVoiceUrl(`https://dict.youdao.com/dictvoice?type=0&audio=${sentence}`);
-            setLeft(event.pageX + 10);
-            setTop(event.pageY + 10);
+            setLeft(event.clientX + 10);
+            setTop(event.clientY + 10);
             setDictDisplay('block');
         });
 
         document.addEventListener('mousedown', (event: MouseEvent) => {
             setDictDisplay((display) => {
                 if (
-                    (event.pageX < leftRef.current ||
-                        event.pageX > leftRef.current + dictPopupWidth ||
-                        event.pageY < topRef.current ||
-                        event.pageY > topRef.current + dictPopupHeight) &&
-                    display === 'block'
+                    (event.clientX < leftRef.current ||
+                        event.clientX > leftRef.current + dictPopupWidth ||
+                        event.clientY < topRef.current ||
+                        event.clientY > topRef.current + dictPopupHeight) &&
+                    display === 'block' &&
+                    event.button === leftClick
                 ) {
                     window.getSelection()?.removeAllRanges();
-                    console.log('event.pageX < leftRef');
+                    console.log('event.pageX', event.pageX, leftRef.current, leftRef.current + dictPopupWidth);
+                    console.log('event.pageY', event.pageY, topRef.current, topRef.current + dictPopupHeight);
                     return 'none';
                 }
                 return display;
@@ -213,7 +252,11 @@ const Popup = () => {
         console.log('onClickExportToAnki');
 
         setDictDisplay('none');
-        setAnkiDisplay('block');
+        setAnkiOpen(true);
+    };
+
+    let handleAnkiClose = () => {
+        setAnkiOpen(false);
     };
 
     return (
@@ -231,14 +274,17 @@ const Popup = () => {
                 sentenceVoiceUrl={sentenceVoiceUrl}
                 onClickExportToAnki={onClickExportToAnki}
             ></DictPopup>
-            <AnkiPopupWrapper display={ankiDisplay}>
-                <BsXLg
-                    style={{ right: 0, marginRight: '20px', position: 'absolute', fontSize: 'larger' }}
-                    onClick={() => {
-                        setAnkiDisplay('none');
-                    }}
-                />
-            </AnkiPopupWrapper>
+            <AnkiPopupWrapper
+                open={ankiOpen}
+                text={text}
+                phonetic={phonetic}
+                textTranslate={textTranslate}
+                textVoiceUrl={textVoiceUrl}
+                sentence={sentence}
+                sentenceTranslate={sentenceTranslate}
+                sentenceVoiceUrl={sentenceVoiceUrl}
+                onClose={handleAnkiClose}
+            ></AnkiPopupWrapper>
         </div>
     );
 };
