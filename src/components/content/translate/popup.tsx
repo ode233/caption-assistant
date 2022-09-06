@@ -14,7 +14,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
-import { Box } from '@mui/material';
+import { Box, InputAdornment } from '@mui/material';
 
 const leftClick = 0;
 
@@ -55,6 +55,8 @@ const Popup = () => {
 
     const ankiOpenRef = useRef(ankiOpen);
 
+    console.log('render');
+
     useEffect(() => {
         leftRef.current = left;
         topRef.current = top;
@@ -70,6 +72,7 @@ const Popup = () => {
             if (!text) {
                 return;
             }
+
             setPhonetic('');
             if (isWord(text)) {
                 fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${text}`)
@@ -97,6 +100,7 @@ const Popup = () => {
             setTextVoiceUrl(`https://dict.youdao.com/dictvoice?type=0&audio=${text}`);
             setSentence(sentence);
             setSentenceVoiceUrl(`https://dict.youdao.com/dictvoice?type=0&audio=${sentence}`);
+
             setLeft(event.clientX + 10);
             setTop(event.clientY + 10);
             setDictDisplay('block');
@@ -213,7 +217,24 @@ const Popup = () => {
                             gap: 1rem;
                         `}
                     >
-                        <TextField fullWidth label="单词" value={text} variant="standard" />
+                        <TextField
+                            fullWidth
+                            label="单词"
+                            value={text}
+                            variant="standard"
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="start">
+                                        <BsVolumeUpFill
+                                            onClick={() => {
+                                                let audio = new Audio(textVoiceUrl);
+                                                audio.play();
+                                            }}
+                                        />
+                                    </InputAdornment>
+                                )
+                            }}
+                        />
                         <TextField
                             fullWidth
                             label="翻译"
@@ -221,7 +242,26 @@ const Popup = () => {
                             onChange={onTextTranslateChange}
                             variant="standard"
                         />
-                        <TextField fullWidth label="上下文" multiline rows={3} value={sentence} variant="standard" />
+                        <TextField
+                            fullWidth
+                            label="上下文"
+                            multiline
+                            maxRows={3}
+                            value={sentence}
+                            variant="standard"
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="start">
+                                        <BsVolumeUpFill
+                                            onClick={() => {
+                                                let audio = new Audio(sentenceVoiceUrl);
+                                                audio.play();
+                                            }}
+                                        />
+                                    </InputAdornment>
+                                )
+                            }}
+                        />
                         <TextField
                             fullWidth
                             label="翻译"
