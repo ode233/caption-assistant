@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { MouseEventHandler, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useState } from 'react';
 import styled from '@emotion/styled';
 import { getText, getSentence } from 'get-selection-more';
-import { BsVolumeUpFill, BsXLg } from 'react-icons/bs';
+import { BsVolumeUpFill } from 'react-icons/bs';
 import { BiExport } from 'react-icons/bi';
 import { css } from '@emotion/react';
 import Divider from '@mui/material/Divider';
@@ -11,10 +11,9 @@ import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
-import { Box, InputAdornment } from '@mui/material';
+import { InputAdornment, InputLabel, Link, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import './popup.scss';
 
 const leftClick = 0;
 
@@ -47,6 +46,9 @@ const Popup = () => {
     const [sentence, setSentence] = useState<string>('');
     const [sentenceTranslate, setSentenceTranslate] = useState<string>('');
     const [sentenceVoiceUrl, setSentenceVoiceUrl] = useState<string>('');
+    const [pageUrl, setPageUrl] = useState<string>('');
+    const [pageTitle, setPageTitle] = useState<string>('');
+    const [pageIconUrl, setPageIconUrl] = useState<string>('');
 
     const [ankiOpen, setAnkiOpen] = useState(false);
 
@@ -96,13 +98,16 @@ const Popup = () => {
                 setSentenceTranslate(tgt);
             });
 
+            setLeft(event.clientX + 10);
+            setTop(event.clientY + 10);
             setText(text);
             setTextVoiceUrl(`https://dict.youdao.com/dictvoice?type=0&audio=${text}`);
             setSentence(sentence);
             setSentenceVoiceUrl(`https://dict.youdao.com/dictvoice?type=0&audio=${sentence}`);
+            setPageUrl(document.URL);
+            setPageTitle(document.title);
+            setPageIconUrl(window.location.origin + '/favicon.ico');
 
-            setLeft(event.clientX + 10);
-            setTop(event.clientY + 10);
             setDictDisplay('block');
         });
 
@@ -214,7 +219,7 @@ const Popup = () => {
                             height: ${ankiPopupHeight + 'px'};
                             display: flex;
                             flex-direction: column;
-                            gap: 1rem;
+                            gap: 16px;
                         `}
                     >
                         <TextField
@@ -271,6 +276,30 @@ const Popup = () => {
                             onChange={onSentenceTranslateChange}
                             variant="standard"
                         />
+                        <div>
+                            <InputLabel shrink={true}>来源</InputLabel>
+                            <ListItem
+                                disablePadding
+                                css={css`
+                                    align-items: end;
+                                `}
+                            >
+                                <ListItemIcon>
+                                    <img src={pageIconUrl}></img>
+                                </ListItemIcon>
+                                <ListItemText
+                                    css={css`
+                                        margin-bottom: 0;
+                                    `}
+                                    primary={
+                                        <Link href={pageUrl} underline="none">
+                                            {pageTitle}
+                                        </Link>
+                                    }
+                                ></ListItemText>
+                            </ListItem>
+                            <hr></hr>
+                        </div>
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={onClickCloseAnki}>关闭</Button>

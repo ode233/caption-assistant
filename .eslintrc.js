@@ -45,7 +45,9 @@ module.exports = {
                     'youdao',
                     'tgt',
                     'anki',
-                    'fefefe'
+                    'fefefe',
+                    'favicon',
+                    'ico'
                 ]
             }
         ]
