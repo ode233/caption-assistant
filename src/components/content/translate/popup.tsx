@@ -14,14 +14,17 @@ import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import { InputAdornment, InputLabel, Link, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import './popup.scss';
+import { addNote } from '../../common/api/ankiApi';
 
 const leftClick = 0;
 
 const dictPopupWidth = 420;
 const dictPopupHeight = 320;
 
-const ankiPopupWidth = 500;
+const ankiPopupWidth = 600;
 const ankiPopupHeight = 800;
+
+const youdaoVoiceUrl = 'https://dict.youdao.com/dictvoice?type=0&audio=';
 
 const DictPopupWrapper = styled.div``;
 
@@ -34,40 +37,56 @@ const Text = styled.h3`
     margin: 18px 0px;
 `;
 
+interface PopupProps {
+    dictDisplay: string;
+    dictLeft: number;
+    dictTop: number;
+    text: string;
+    textPhonetic: string;
+    textVoiceUrl: string;
+    textTranslate: string;
+    sentence: string;
+    sentenceVoiceUrl: string;
+    sentenceTranslate: string;
+    remark: string;
+    pageIconUrl: string;
+    pageTitle: string;
+    pageUrl: string;
+    imgDataUrl: string;
+    ankiOpen: boolean;
+}
+
 const Popup = () => {
-    const [dictDisplay, setDictDisplay] = useState<string>('none');
-    const [left, setLeft] = useState<number>(0);
-    const [top, setTop] = useState<number>(0);
+    const [popupProps, setPopupProps] = useState<PopupProps>({
+        dictDisplay: 'none',
+        dictLeft: 0,
+        dictTop: 0,
+        text: '',
+        textPhonetic: '',
+        textVoiceUrl: '',
+        textTranslate: '',
+        sentence: '',
+        sentenceVoiceUrl: '',
+        sentenceTranslate: '',
+        remark: '',
+        pageIconUrl: '',
+        pageTitle: '',
+        pageUrl: '',
+        imgDataUrl: '',
+        ankiOpen: false
+    });
 
-    const [text, setText] = useState<string>('');
-    const [textTranslate, setTextTranslate] = useState<string>('');
-    const [textVoiceUrl, setTextVoiceUrl] = useState<string>('');
-    const [phonetic, setPhonetic] = useState<string>('');
-    const [sentence, setSentence] = useState<string>('');
-    const [sentenceTranslate, setSentenceTranslate] = useState<string>('');
-    const [sentenceVoiceUrl, setSentenceVoiceUrl] = useState<string>('');
-    const [pageUrl, setPageUrl] = useState<string>('');
-    const [pageTitle, setPageTitle] = useState<string>('');
-    const [pageIconUrl, setPageIconUrl] = useState<string>('');
-
-    const [ankiOpen, setAnkiOpen] = useState(false);
-
-    const leftRef = useRef(left);
-    const topRef = useRef(top);
-
-    const ankiOpenRef = useRef(ankiOpen);
+    const popupPropsRef = useRef(popupProps);
 
     console.log('render');
 
     useEffect(() => {
-        leftRef.current = left;
-        topRef.current = top;
-        ankiOpenRef.current = ankiOpen;
+        popupPropsRef.current = popupProps;
     });
 
     useEffect(() => {
         document.addEventListener('mouseup', (event: MouseEvent) => {
-            if (ankiOpenRef.current) {
+            if (popupPropsRef.current.ankiOpen) {
                 return;
             }
             let text = getText();
@@ -75,7 +94,7 @@ const Popup = () => {
                 return;
             }
 
-            setPhonetic('');
+            popupProps.textPhonetic = '';
             if (isWord(text)) {
                 fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${text}`)
                     .then((response) => {
@@ -87,65 +106,92 @@ const Popup = () => {
                         if (!data) {
                             return;
                         }
-                        setPhonetic(data[0].phonetic);
+                        let phonetic = data[0].phonetic;
+                        if (phonetic) {
+                            popupProps.textPhonetic = phonetic;
+                            setPopupProps({ ...popupProps });
+                        }
                     });
             }
             chrome.runtime.sendMessage({ contentScriptQuery: 'youdaoTranslate', content: text }, (tgt) => {
-                setTextTranslate(tgt);
+                popupProps.textTranslate = tgt;
+                setPopupProps({ ...popupProps });
             });
             let sentence = getSentence();
             chrome.runtime.sendMessage({ contentScriptQuery: 'youdaoTranslate', content: sentence }, (tgt) => {
-                setSentenceTranslate(tgt);
+                popupProps.sentenceTranslate = tgt;
+                setPopupProps({ ...popupProps });
+            });
+            chrome.runtime.sendMessage({ contentScriptQuery: 'captureVisibleTab' }, (imgUrl) => {
+                popupProps.imgDataUrl = imgUrl;
+                setPopupProps({ ...popupProps });
             });
 
-            setLeft(event.clientX + 10);
-            setTop(event.clientY + 10);
-            setText(text);
-            setTextVoiceUrl(`https://dict.youdao.com/dictvoice?type=0&audio=${text}`);
-            setSentence(sentence);
-            setSentenceVoiceUrl(`https://dict.youdao.com/dictvoice?type=0&audio=${sentence}`);
-            setPageUrl(document.URL);
-            setPageTitle(document.title);
-            setPageIconUrl(window.location.origin + '/favicon.ico');
-
-            setDictDisplay('block');
+            popupProps.dictDisplay = 'block';
+            popupProps.dictLeft = event.clientX + 10;
+            popupProps.dictTop = event.clientY + 10;
+            popupProps.text = text;
+            popupProps.textVoiceUrl = youdaoVoiceUrl + text;
+            popupProps.sentence = sentence;
+            popupProps.sentenceVoiceUrl = youdaoVoiceUrl + sentence;
+            popupProps.remark = '';
+            popupProps.pageIconUrl = window.location.origin + '/favicon.ico';
+            popupProps.pageTitle = document.title;
+            popupProps.pageUrl = document.URL;
+            setPopupProps({ ...popupProps });
         });
 
         document.addEventListener('mousedown', (event: MouseEvent) => {
-            setDictDisplay((display) => {
-                if (
-                    (event.clientX < leftRef.current ||
-                        event.clientX > leftRef.current + dictPopupWidth ||
-                        event.clientY < topRef.current ||
-                        event.clientY > topRef.current + dictPopupHeight) &&
-                    display === 'block' &&
-                    event.button === leftClick
-                ) {
-                    window.getSelection()?.removeAllRanges();
-                    console.log('event.pageX', event.pageX, leftRef.current, leftRef.current + dictPopupWidth);
-                    console.log('event.pageY', event.pageY, topRef.current, topRef.current + dictPopupHeight);
-                    return 'none';
-                }
-                return display;
-            });
+            if (
+                (event.clientX < popupPropsRef.current.dictLeft ||
+                    event.clientX > popupPropsRef.current.dictLeft + dictPopupWidth ||
+                    event.clientY < popupPropsRef.current.dictTop ||
+                    event.clientY > popupPropsRef.current.dictTop + dictPopupHeight) &&
+                popupPropsRef.current.dictDisplay === 'block' &&
+                event.button === leftClick
+            ) {
+                window.getSelection()?.removeAllRanges();
+                popupPropsRef.current.dictDisplay = 'none';
+                setPopupProps({ ...popupPropsRef.current });
+            }
         });
     }, []);
 
-    let onClickOpenAnkiPopup = () => {
-        setDictDisplay('none');
-        setAnkiOpen(true);
+    const onClickOpenAnkiPopup = () => {
+        popupProps.dictDisplay = 'none';
+        popupProps.ankiOpen = true;
+        setPopupProps({ ...popupProps });
     };
 
-    let onClickCloseAnki = () => {
-        setAnkiOpen(false);
+    const onClickCloseAnki = () => {
+        popupProps.ankiOpen = false;
+        setPopupProps({ ...popupProps });
+    };
+
+    const onClickExportAnki = async () => {
+        chrome.runtime.sendMessage({ contentScriptQuery: 'ankiExport', content: popupProps }, (data) => {
+            if (data.error) {
+                console.log('ankiExport err', data);
+                return;
+            }
+            popupProps.ankiOpen = false;
+            setPopupProps({ ...popupProps });
+        });
     };
 
     const onTextTranslateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setTextTranslate(event.target.value);
+        popupProps.textTranslate = event.target.value;
+        setPopupProps({ ...popupProps });
     };
 
     const onSentenceTranslateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSentenceTranslate(event.target.value);
+        popupProps.sentenceTranslate = event.target.value;
+        setPopupProps({ ...popupProps });
+    };
+
+    const onRemarkChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        popupProps.remark = event.target.value;
+        setPopupProps({ ...popupProps });
     };
 
     return (
@@ -162,23 +208,23 @@ const Popup = () => {
                     width: ${dictPopupWidth + 'px'};
                     height: ${dictPopupHeight + 'px'};
                     z-index: 10001;
-                    display: ${dictDisplay};
-                    left: ${left + 'px'};
-                    top: ${top + 'px'};
+                    display: ${popupProps.dictDisplay};
+                    left: ${popupProps.dictLeft + 'px'};
+                    top: ${popupProps.dictTop + 'px'};
                 `}
             >
                 <div>
                     <Text style={{ marginTop: '0px' }}>
-                        {text}&nbsp;&nbsp;&nbsp;&nbsp;{phonetic}&nbsp;&nbsp;&nbsp;&nbsp;
+                        {popupProps.text}&nbsp;&nbsp;&nbsp;&nbsp;{popupProps.textPhonetic}&nbsp;&nbsp;&nbsp;&nbsp;
                         <BsVolumeUpFill
                             style={{ fontSize: 'larger', verticalAlign: 'bottom' }}
                             onClick={() => {
-                                let audio = new Audio(textVoiceUrl);
+                                let audio = new Audio(popupProps.textVoiceUrl);
                                 audio.play();
                             }}
                         />
                     </Text>
-                    <Text>{textTranslate}</Text>
+                    <Text>{popupProps.textTranslate}</Text>
                     <BiExport
                         style={{
                             top: '20px',
@@ -193,21 +239,21 @@ const Popup = () => {
                 <Divider />
                 <div>
                     <Text>
-                        {sentence}&nbsp;&nbsp;&nbsp;&nbsp;
+                        {popupProps.sentence}&nbsp;&nbsp;&nbsp;&nbsp;
                         <BsVolumeUpFill
                             style={{ fontSize: 'larger', verticalAlign: 'text-bottom' }}
                             onClick={() => {
-                                let audio = new Audio(sentenceVoiceUrl);
+                                let audio = new Audio(popupProps.sentenceVoiceUrl);
                                 audio.play();
                             }}
                         />
                     </Text>
-                    <Text style={{ marginBottom: '0px' }}>{sentenceTranslate}</Text>
+                    <Text style={{ marginBottom: '0px' }}>{popupProps.sentenceTranslate}</Text>
                 </div>
             </DictPopupWrapper>
             <AnkiPopupWrapper>
                 <Dialog
-                    open={ankiOpen}
+                    open={popupProps.ankiOpen}
                     css={css`
                         bottom: 200px;
                     `}
@@ -225,14 +271,14 @@ const Popup = () => {
                         <TextField
                             fullWidth
                             label="单词"
-                            value={text}
+                            value={popupProps.text + '    ' + popupProps.textPhonetic}
                             variant="standard"
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="start">
                                         <BsVolumeUpFill
                                             onClick={() => {
-                                                let audio = new Audio(textVoiceUrl);
+                                                let audio = new Audio(popupProps.textVoiceUrl);
                                                 audio.play();
                                             }}
                                         />
@@ -243,7 +289,7 @@ const Popup = () => {
                         <TextField
                             fullWidth
                             label="翻译"
-                            value={textTranslate}
+                            value={popupProps.textTranslate}
                             onChange={onTextTranslateChange}
                             variant="standard"
                         />
@@ -252,14 +298,14 @@ const Popup = () => {
                             label="上下文"
                             multiline
                             maxRows={3}
-                            value={sentence}
+                            value={popupProps.sentence}
                             variant="standard"
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="start">
                                         <BsVolumeUpFill
                                             onClick={() => {
-                                                let audio = new Audio(sentenceVoiceUrl);
+                                                let audio = new Audio(popupProps.sentenceVoiceUrl);
                                                 audio.play();
                                             }}
                                         />
@@ -272,38 +318,64 @@ const Popup = () => {
                             label="翻译"
                             multiline
                             maxRows={3}
-                            value={sentenceTranslate}
+                            value={popupProps.sentenceTranslate}
                             onChange={onSentenceTranslateChange}
                             variant="standard"
+                        />
+                        <TextField
+                            fullWidth
+                            label="备注"
+                            value={popupProps.remark}
+                            onChange={onRemarkChange}
+                            variant="standard"
+                            InputLabelProps={{
+                                shrink: true
+                            }}
                         />
                         <div>
                             <InputLabel shrink={true}>来源</InputLabel>
                             <ListItem
-                                disablePadding
                                 css={css`
                                     align-items: end;
                                 `}
+                                disablePadding
                             >
-                                <ListItemIcon>
-                                    <img src={pageIconUrl}></img>
+                                <ListItemIcon
+                                    css={css`
+                                        min-width: 0;
+                                        margin-right: 10px;
+                                    `}
+                                >
+                                    <img src={popupProps.pageIconUrl}></img>
                                 </ListItemIcon>
                                 <ListItemText
                                     css={css`
                                         margin-bottom: 0;
                                     `}
                                     primary={
-                                        <Link href={pageUrl} underline="none">
-                                            {pageTitle}
+                                        <Link href={popupProps.pageUrl} underline="none">
+                                            {popupProps.pageTitle}
                                         </Link>
                                     }
                                 ></ListItemText>
                             </ListItem>
                             <hr></hr>
                         </div>
+                        <div>
+                            <InputLabel shrink={true}>图片</InputLabel>
+                            <ListItem disablePadding>
+                                <img
+                                    src={popupProps.imgDataUrl}
+                                    css={css`
+                                        width: ${ankiPopupWidth - 50 + 'px'};
+                                    `}
+                                ></img>
+                            </ListItem>
+                        </div>
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={onClickCloseAnki}>关闭</Button>
-                        <Button onClick={onClickCloseAnki}>导出至Anki</Button>
+                        <Button onClick={onClickExportAnki}>导出至Anki</Button>
                     </DialogActions>
                 </Dialog>
             </AnkiPopupWrapper>
@@ -319,4 +391,4 @@ function isWord(text: string): boolean {
     return false;
 }
 
-export { Popup };
+export { PopupProps, Popup };

@@ -47,7 +47,13 @@ module.exports = {
                     'anki',
                     'fefefe',
                     'favicon',
-                    'ico'
+                    'ico',
+                    'cloze',
+                    'jpeg',
+                    'mousedown',
+                    'mouseup',
+                    'Mui',
+                    'dom'
                 ]
             }
         ]
