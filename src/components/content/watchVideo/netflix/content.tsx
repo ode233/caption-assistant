@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Subtitle, SUBTITLE_WRAPPER_ID } from '../definition';
+import { Subtitle, SubtitleContainer, SUBTITLE_WRAPPER_ID } from '../definition';
 import { getSubtitleNodeList, subtitleNodeList } from './subtitle';
 import { NetflixVideo } from './video';
 
@@ -54,11 +54,7 @@ const documentObserver = new MutationObserver((mutations, observer) => {
     let subtitle = new Subtitle(subtitleNodeList);
 
     ReactDOM.render(
-        <subtitle.SubtitleContainer
-            video={netflixVideo}
-            mountElement={mountElement}
-            subtitle={subtitle}
-        ></subtitle.SubtitleContainer>,
+        <SubtitleContainer video={netflixVideo} subtitle={subtitle} mountElement={mountElement}></SubtitleContainer>,
         document.body.appendChild(document.createElement('div'))
     );
 

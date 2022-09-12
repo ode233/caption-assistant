@@ -14,7 +14,7 @@ import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import { InputAdornment, InputLabel, Link, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import './popup.scss';
-import { addNote } from '../../common/api/ankiApi';
+import { WATCH_URL_LIST } from '../../common/constants/watchVideoConstants';
 
 const leftClick = 0;
 
@@ -54,6 +54,11 @@ interface PopupProps {
     pageUrl: string;
     imgDataUrl: string;
     ankiOpen: boolean;
+}
+
+interface ContextFromVideo {
+    sentenceVoiceUrl: string;
+    imgDataUrl: string;
 }
 
 const Popup = () => {
@@ -158,9 +163,27 @@ const Popup = () => {
     }, []);
 
     const onClickOpenAnkiPopup = () => {
-        popupProps.dictDisplay = 'none';
-        popupProps.ankiOpen = true;
-        setPopupProps({ ...popupProps });
+        let isWatchVideo = false;
+        for (let watchUrl of WATCH_URL_LIST) {
+            if (popupProps.pageUrl.match(watchUrl)) {
+                isWatchVideo = true;
+                break;
+            }
+        }
+        if (isWatchVideo) {
+            chrome.runtime.sendMessage({ contentScriptQuery: 'getContextFromVideo' }, (data: ContextFromVideo) => {
+                console.log('contextFromVideo', data);
+                popupProps.sentenceVoiceUrl = data.sentenceVoiceUrl;
+                popupProps.imgDataUrl = data.imgDataUrl;
+                popupProps.dictDisplay = 'none';
+                popupProps.ankiOpen = true;
+                setPopupProps({ ...popupProps });
+            });
+        } else {
+            popupProps.dictDisplay = 'none';
+            popupProps.ankiOpen = true;
+            setPopupProps({ ...popupProps });
+        }
     };
 
     const onClickCloseAnki = () => {
@@ -391,4 +414,4 @@ function isWord(text: string): boolean {
     return false;
 }
 
-export { PopupProps, Popup };
+export { PopupProps, Popup, ContextFromVideo };

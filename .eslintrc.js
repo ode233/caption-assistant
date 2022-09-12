@@ -53,7 +53,8 @@ module.exports = {
                     'mousedown',
                     'mouseup',
                     'Mui',
-                    'dom'
+                    'dom',
+                    'keydown'
                 ]
             }
         ]

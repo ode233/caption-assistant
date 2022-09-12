@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useState } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
+import { ContextFromVideo, PopupProps } from '../translate/popup';
 
 const SUBTITLE_WRAPPER_ID = 'subtitle-assistant-wrapper';
 
@@ -10,8 +11,8 @@ const NEXT = 'd';
 
 interface SubtitleContainerProps {
     video: Video;
-    mountElement: Element;
     subtitle: Subtitle;
+    mountElement: Element;
 }
 
 const SubtitleWrapper = styled.div`
@@ -70,70 +71,6 @@ class Subtitle {
         return subtitle.begin;
     }
 
-    public SubtitleContainer({ video, mountElement, subtitle }: SubtitleContainerProps) {
-        const [subtitleElementString, setSubtitleElementString] = useState<string>('');
-
-        useEffect(() => {
-            console.log('SubtitleContainer init');
-
-            video.setOntimeupdate(() => {
-                const currentTime = video.getCurrentTime();
-                let subtitleNode = subtitle.getSubtitleByTime(currentTime);
-
-                if (subtitleNode === null) {
-                    setSubtitleElementString('');
-                    subtitle.nowSubTitleIndex = -1;
-                    subtitle.nowHasSubtitle = false;
-                } else if (currentTime > subtitleNode.end) {
-                    setSubtitleElementString('');
-                    subtitle.nowSubTitleIndex = parseInt(subtitleNode.element.getAttribute('index')!, 10);
-                    subtitle.nowHasSubtitle = false;
-                } else {
-                    setSubtitleElementString(subtitleNode.element.outerHTML);
-                    subtitle.nowSubTitleIndex = parseInt(subtitleNode.element.getAttribute('index')!, 10);
-                    subtitle.nowHasSubtitle = true;
-                }
-            });
-
-            mountElement.addEventListener('keydown', (event) => {
-                let keyEvent = event as KeyboardEvent;
-                switch (keyEvent.key.toLowerCase()) {
-                    case PREV: {
-                        const time = subtitle.getPrevSubtitleTime();
-                        if (!time) {
-                            break;
-                        }
-                        video.seek(time);
-                        video.play();
-                        break;
-                    }
-                    case NEXT: {
-                        const time = subtitle.getNextSubtitleTime();
-                        if (!time) {
-                            break;
-                        }
-                        video.seek(time);
-                        video.play();
-                        break;
-                    }
-                    default:
-                        break;
-                }
-            });
-        }, []);
-
-        return ReactDOM.createPortal(
-            <SubtitleWrapper
-                onClick={(e: any) => {
-                    video.pause();
-                }}
-                dangerouslySetInnerHTML={{ __html: subtitleElementString }}
-                id={SUBTITLE_WRAPPER_ID}
-            ></SubtitleWrapper>,
-            mountElement
-        );
-    }
-
     private binarySearch(i: number, j: number, target: number): SubtitleNode | null {
         if (i > j) {
             let prevIdx = i - 1;
@@ -163,4 +100,79 @@ interface Video {
     setOntimeupdate: (f: any) => void;
 }
 
-export { SubtitleNode, Subtitle, Video, SUBTITLE_WRAPPER_ID };
+function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerProps) {
+    const [subtitleElementString, setSubtitleElementString] = useState<string>('');
+
+    useEffect(() => {
+        console.log('SubtitleContainer init');
+
+        video.setOntimeupdate(() => {
+            const currentTime = video.getCurrentTime();
+            let subtitleNode = subtitle.getSubtitleByTime(currentTime);
+
+            if (subtitleNode === null) {
+                setSubtitleElementString('');
+                subtitle.nowSubTitleIndex = -1;
+                subtitle.nowHasSubtitle = false;
+            } else if (currentTime > subtitleNode.end) {
+                setSubtitleElementString('');
+                subtitle.nowSubTitleIndex = parseInt(subtitleNode.element.getAttribute('index')!, 10);
+                subtitle.nowHasSubtitle = false;
+            } else {
+                setSubtitleElementString(subtitleNode.element.outerHTML);
+                subtitle.nowSubTitleIndex = parseInt(subtitleNode.element.getAttribute('index')!, 10);
+                subtitle.nowHasSubtitle = true;
+            }
+        });
+
+        mountElement.addEventListener('keydown', (event) => {
+            let keyEvent = event as KeyboardEvent;
+            switch (keyEvent.key.toLowerCase()) {
+                case PREV: {
+                    const time = subtitle.getPrevSubtitleTime();
+                    if (!time) {
+                        break;
+                    }
+                    video.seek(time);
+                    video.play();
+                    break;
+                }
+                case NEXT: {
+                    const time = subtitle.getNextSubtitleTime();
+                    if (!time) {
+                        break;
+                    }
+                    video.seek(time);
+                    video.play();
+                    break;
+                }
+                default:
+                    break;
+            }
+        });
+
+        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            if (request.backgroundQuery === 'getContextFromVideo') {
+                let contextFromVideo: ContextFromVideo = {
+                    sentenceVoiceUrl: 'test',
+                    imgDataUrl: 'test'
+                };
+                // TODO: get sentenceVoiceUrl and imgDataUrl
+                sendResponse(contextFromVideo);
+            }
+        });
+    }, []);
+
+    return ReactDOM.createPortal(
+        <SubtitleWrapper
+            onClick={(e: any) => {
+                video.pause();
+            }}
+            dangerouslySetInnerHTML={{ __html: subtitleElementString }}
+            id={SUBTITLE_WRAPPER_ID}
+        ></SubtitleWrapper>,
+        mountElement
+    );
+}
+
+export { SubtitleNode, Subtitle, Video, SubtitleContainer, SUBTITLE_WRAPPER_ID };

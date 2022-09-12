@@ -6,8 +6,6 @@ import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
 import { StyledEngineProvider, createTheme, ThemeProvider } from '@mui/material/styles';
 
-console.log('translate');
-
 let popupDiv = document.createElement('div');
 document.body.appendChild(popupDiv);
 ReactDOM.render(<Popup></Popup>, popupDiv);

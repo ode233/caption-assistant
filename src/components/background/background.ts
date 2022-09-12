@@ -2,11 +2,14 @@ import 'regenerator-runtime/runtime.js';
 import { addNote, createDeck, createModel, getDeckNames, getModelNames } from '../common/api/ankiApi';
 import { getYoudaoTranslate } from '../common/api/translateApi';
 import { ANKI_DECK_NAME, ANKI_MODEL_NAME } from '../common/constants/ankiConstants';
+import { WATCH_NETFLIX_URL, WATCH_URL_LIST } from '../common/constants/watchVideoConstants';
+import { PopupProps } from '../content/translate/popup';
 
 console.log('background');
+
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     // read changeInfo data and do something with it (like read the url)
-    if (changeInfo.status === 'loading' && tab.url?.match('https://www.netflix.com/watch/')) {
+    if (changeInfo.status === 'loading' && tab.url?.match(WATCH_NETFLIX_URL)) {
         chrome.scripting.executeScript({
             target: { tabId: tabId },
             files: ['watchVideo/netflix/content.js']
@@ -25,15 +28,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
         case 'captureVisibleTab': {
             chrome.tabs.captureVisibleTab((imgUrl: string) => {
-                console.log('imgUrl', imgUrl);
                 sendResponse(imgUrl);
             });
             return true;
         }
         case 'ankiExport': {
-            console.log('ankiExport request.conten', request.content);
             addNote(request.content).then((data) => {
                 sendResponse(data);
+            });
+            return true;
+        }
+        case 'getContextFromVideo': {
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                chrome.tabs.sendMessage(tabs[0].id!, { backgroundQuery: 'getContextFromVideo' }, (data) => {
+                    sendResponse(data);
+                });
             });
             return true;
         }
@@ -52,6 +61,5 @@ async function checkAnkiConfig() {
     if (!modelNames.includes(ANKI_MODEL_NAME)) {
         console.log('createModel');
         let resp = await createModel();
-        console.log(resp);
     }
 }
