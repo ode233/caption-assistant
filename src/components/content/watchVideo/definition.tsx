@@ -158,6 +158,15 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
                     imgDataUrl: 'test'
                 };
                 // TODO: get sentenceVoiceUrl and imgDataUrl
+                chrome.tabCapture.capture({ audio: true }, (stream) => {
+                    if (!stream) {
+                        return;
+                    }
+                    let track = stream?.getAudioTracks()[0];
+                    const audioCtx = new AudioContext();
+                    const source = audioCtx.createMediaStreamSource(stream);
+                    console.log(123);
+                });
                 sendResponse(contextFromVideo);
             }
         });

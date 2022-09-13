@@ -277,6 +277,7 @@ const Popup = () => {
             <AnkiPopupWrapper>
                 <Dialog
                     open={popupProps.ankiOpen}
+                    maxWidth={false}
                     css={css`
                         bottom: 200px;
                     `}
@@ -365,8 +366,10 @@ const Popup = () => {
                             >
                                 <ListItemIcon
                                     css={css`
+                                        height: 20px;
                                         min-width: 0;
                                         margin-right: 10px;
+                                        align-self: center;
                                     `}
                                 >
                                     <img src={popupProps.pageIconUrl}></img>
@@ -390,7 +393,7 @@ const Popup = () => {
                                 <img
                                     src={popupProps.imgDataUrl}
                                     css={css`
-                                        width: ${ankiPopupWidth - 50 + 'px'};
+                                        width: inherit;
                                     `}
                                 ></img>
                             </ListItem>
