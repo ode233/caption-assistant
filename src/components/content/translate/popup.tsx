@@ -13,7 +13,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import { InputAdornment, InputLabel, Link, ListItem, ListItemIcon, ListItemText } from '@mui/material';
-import './popup.scss';
 import { WATCH_URL_LIST } from '../../common/constants/watchVideoConstants';
 
 const leftClick = 0;
