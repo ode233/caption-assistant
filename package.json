@@ -32,7 +32,7 @@
         "@babel/plugin-proposal-class-properties": "^7.12.13",
         "@babel/preset-env": "^7.12.17",
         "@babel/preset-react": "^7.12.13",
-        "@types/chrome": "0.0.158",
+        "@types/chrome": "^0.0.196",
         "@types/jest": "^27.0.2",
         "@types/react": "^17.0.0",
         "@types/react-dom": "^17.0.0",

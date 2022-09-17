@@ -7,6 +7,7 @@ const rootDir = path.join(__dirname, '..');
 module.exports = {
     entry: {
         popup: path.join(rootDir, 'src/components/popup/popup.tsx'),
+        options: path.join(rootDir, 'src/components/options/options.tsx'),
         background: path.join(rootDir, 'src/components/background/background.ts'),
         '/watchVideo/netflix/content': path.join(rootDir, 'src/components/content/watchVideo/netflix/content.tsx'),
         '/watchVideo/netflix/inject': path.join(rootDir, 'src/components/content/watchVideo/netflix/inject.ts'),
@@ -20,7 +21,8 @@ module.exports = {
         splitChunks: {
             name: 'vendor',
             chunks(chunk) {
-                return chunk.name !== 'background';
+                const notChunks = ['background', 'popup', 'options'];
+                return !notChunks.includes(chunk.name);
             }
         }
     },
@@ -68,23 +70,23 @@ module.exports = {
                             })
                         );
                     }
-                }
-            ]
-        }),
-        new CopyPlugin({
-            patterns: [
+                },
                 {
                     from: path.join(rootDir, 'src', 'assets', 'icons'),
                     to: path.join(rootDir, 'dist', 'assets', 'icons'),
                     force: true
+                },
+                {
+                    from: path.join(rootDir, 'src', 'components', 'popup', 'popup.html'),
+                    to: path.join(rootDir, 'dist'),
+                    force: true
+                },
+                {
+                    from: path.join(rootDir, 'src', 'components', 'options', 'options.html'),
+                    to: path.join(rootDir, 'dist'),
+                    force: true
                 }
             ]
-        }),
-        new HtmlWebpackPlugin({
-            template: path.join(rootDir, 'src', 'components', 'popup', 'popup.html'),
-            filename: 'popup.html',
-            chunks: ['popup'],
-            cache: false
         })
     ]
 };

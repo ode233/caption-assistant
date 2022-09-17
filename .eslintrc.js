@@ -54,7 +54,12 @@ module.exports = {
                     'mouseup',
                     'Mui',
                     'dom',
-                    'keydown'
+                    'keydown',
+                    'ondataavailable',
+                    'onstop',
+                    'webpack',
+                    'onloadend',
+                    'loadend'
                 ]
             }
         ]

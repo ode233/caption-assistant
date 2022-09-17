@@ -215,12 +215,22 @@ export const addNote = async (popupProps: PopupProps) => {
         filename: `${timestamp}_textVoice.mp3`,
         fields: ['TextVoice']
     };
-    let sentenceVoice = {
-        url: popupProps.sentenceVoiceUrl,
-        filename: `${timestamp}_sentenceVoice.mp3`,
-        fields: ['SentenceVoice']
-    };
-    let imgData = popupProps.imgDataUrl.replace('data:image/jpeg;base64,', '');
+    let sentenceVoice;
+    if (popupProps.videoSentenceVoiceDataUrl) {
+        let voiceData = popupProps.videoSentenceVoiceDataUrl.split(',')[1];
+        sentenceVoice = {
+            data: voiceData,
+            filename: `${timestamp}_sentenceVoice.mp3`,
+            fields: ['SentenceVoice']
+        };
+    } else {
+        sentenceVoice = {
+            url: popupProps.sentenceVoiceUrl,
+            filename: `${timestamp}_sentenceVoice.mp3`,
+            fields: ['SentenceVoice']
+        };
+    }
+    let imgData = popupProps.imgDataUrl.split(',')[1];
     let img = {
         data: imgData,
         filename: `${timestamp}_img.jpeg`,

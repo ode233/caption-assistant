@@ -36,49 +36,33 @@ const Text = styled.h3`
     margin: 18px 0px;
 `;
 
-interface PopupProps {
-    dictDisplay: string;
-    dictLeft: number;
-    dictTop: number;
-    text: string;
-    textPhonetic: string;
-    textVoiceUrl: string;
-    textTranslate: string;
-    sentence: string;
-    sentenceVoiceUrl: string;
-    sentenceTranslate: string;
-    remark: string;
-    pageIconUrl: string;
-    pageTitle: string;
-    pageUrl: string;
-    imgDataUrl: string;
-    ankiOpen: boolean;
+class PopupProps {
+    public dictDisplay = 'none';
+    public dictLeft = 0;
+    public dictTop = 0;
+    public text = '';
+    public textPhonetic = '';
+    public textVoiceUrl = '';
+    public textTranslate = '';
+    public sentence = '';
+    public sentenceVoiceUrl = '';
+    public videoSentenceVoiceDataUrl = '';
+    public sentenceTranslate = '';
+    public remark = '';
+    public pageIconUrl = '';
+    public pageTitle = '';
+    public pageUrl = '';
+    public imgDataUrl = '';
+    public ankiOpen = false;
 }
 
 interface ContextFromVideo {
-    sentenceVoiceUrl: string;
+    videoSentenceVoiceDataUrl: string;
     imgDataUrl: string;
 }
 
 const Popup = () => {
-    const [popupProps, setPopupProps] = useState<PopupProps>({
-        dictDisplay: 'none',
-        dictLeft: 0,
-        dictTop: 0,
-        text: '',
-        textPhonetic: '',
-        textVoiceUrl: '',
-        textTranslate: '',
-        sentence: '',
-        sentenceVoiceUrl: '',
-        sentenceTranslate: '',
-        remark: '',
-        pageIconUrl: '',
-        pageTitle: '',
-        pageUrl: '',
-        imgDataUrl: '',
-        ankiOpen: false
-    });
+    const [popupProps, setPopupProps] = useState(new PopupProps());
 
     const popupPropsRef = useRef(popupProps);
 
@@ -90,6 +74,9 @@ const Popup = () => {
 
     useEffect(() => {
         document.addEventListener('mouseup', (event: MouseEvent) => {
+            chrome.runtime.sendMessage({
+                contentScriptQuery: 'captureAudio'
+            });
             if (popupPropsRef.current.ankiOpen) {
                 return;
             }
@@ -98,7 +85,7 @@ const Popup = () => {
                 return;
             }
 
-            popupProps.textPhonetic = '';
+            let popupProps = new PopupProps();
             if (isWord(text)) {
                 fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${text}`)
                     .then((response) => {
@@ -138,7 +125,6 @@ const Popup = () => {
             popupProps.textVoiceUrl = youdaoVoiceUrl + text;
             popupProps.sentence = sentence;
             popupProps.sentenceVoiceUrl = youdaoVoiceUrl + sentence;
-            popupProps.remark = '';
             popupProps.pageIconUrl = window.location.origin + '/favicon.ico';
             popupProps.pageTitle = document.title;
             popupProps.pageUrl = document.URL;
@@ -162,6 +148,8 @@ const Popup = () => {
     }, []);
 
     const onClickOpenAnkiPopup = () => {
+        popupProps.dictDisplay = 'none';
+        setPopupProps({ ...popupProps });
         let isWatchVideo = false;
         for (let watchUrl of WATCH_URL_LIST) {
             if (popupProps.pageUrl.match(watchUrl)) {
@@ -172,14 +160,12 @@ const Popup = () => {
         if (isWatchVideo) {
             chrome.runtime.sendMessage({ contentScriptQuery: 'getContextFromVideo' }, (data: ContextFromVideo) => {
                 console.log('contextFromVideo', data);
-                popupProps.sentenceVoiceUrl = data.sentenceVoiceUrl;
+                popupProps.videoSentenceVoiceDataUrl = data.videoSentenceVoiceDataUrl;
                 popupProps.imgDataUrl = data.imgDataUrl;
-                popupProps.dictDisplay = 'none';
                 popupProps.ankiOpen = true;
                 setPopupProps({ ...popupProps });
             });
         } else {
-            popupProps.dictDisplay = 'none';
             popupProps.ankiOpen = true;
             setPopupProps({ ...popupProps });
         }
@@ -217,7 +203,11 @@ const Popup = () => {
     };
 
     return (
-        <div>
+        <div
+            css={css`
+                all: initial;
+            `}
+        >
             <DictPopupWrapper
                 css={css`
                     box-sizing: border-box;
@@ -328,7 +318,14 @@ const Popup = () => {
                                     <InputAdornment position="start">
                                         <BsVolumeUpFill
                                             onClick={() => {
-                                                let audio = new Audio(popupProps.sentenceVoiceUrl);
+                                                let url = popupProps.videoSentenceVoiceDataUrl;
+                                                if (!url) {
+                                                    url = popupProps.sentenceVoiceUrl;
+                                                }
+                                                if (!url) {
+                                                    return;
+                                                }
+                                                let audio = new Audio(url);
                                                 audio.play();
                                             }}
                                         />

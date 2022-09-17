@@ -1,12 +1,12 @@
 import ReactDOM from 'react-dom';
 
-console.log('extension popup');
+console.log('options');
 
-const Popup = () => {
+const Option = () => {
     return <div></div>;
 };
 
 const root = document.getElementById('root');
 console.log(root);
 
-ReactDOM.render(<Popup></Popup>, root);
+ReactDOM.render(<Option></Option>, root);

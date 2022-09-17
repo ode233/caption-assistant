@@ -1,8 +1,10 @@
-import React, { useEffect } from 'react';
+import { css } from '@emotion/react';
+import { useEffect, useRef } from 'react';
 import { useState } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
-import { ContextFromVideo, PopupProps } from '../translate/popup';
+import { delay } from '../../common/function/function';
+import { ContextFromVideo } from '../translate/popup';
 
 const SUBTITLE_WRAPPER_ID = 'subtitle-assistant-wrapper';
 
@@ -53,6 +55,13 @@ class Subtitle {
         return this.binarySearch(0, this.subtitleNodeList.length - 1, time);
     }
 
+    public getNowSubtitleNode() {
+        if (this.nowSubTitleIndex < 0) {
+            return null;
+        }
+        return this.subtitleNodeList[this.nowSubTitleIndex];
+    }
+
     public getNextSubtitleTime(): number | null {
         let nextIndex = this.nowSubTitleIndex + 1;
         if (nextIndex >= this.subtitleNodeList.length) {
@@ -93,6 +102,7 @@ class Subtitle {
 }
 
 interface Video {
+    // all time unit is second
     seek: (time: number) => void;
     play: () => void;
     pause: () => void;
@@ -101,7 +111,10 @@ interface Video {
 }
 
 function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerProps) {
-    const [subtitleElementString, setSubtitleElementString] = useState<string>('');
+    const [subtitleElementString, setSubtitleElementString] = useState('');
+    const [display, setDisplay] = useState('block');
+
+    const streamRef = useRef(new MediaStream());
 
     useEffect(() => {
         console.log('SubtitleContainer init');
@@ -151,29 +164,110 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
             }
         });
 
+        async function getContextFromVideo(sendResponse: Function) {
+            setDisplay('none');
+            video.pause();
+            let contextFromVideo: ContextFromVideo = {
+                videoSentenceVoiceDataUrl: '',
+                imgDataUrl: ''
+            };
+            // TODO: hide subtitle and popup
+            // get sentenceVoiceUrl
+            let stream = streamRef.current;
+            if (!stream || stream.getAudioTracks().length === 0) {
+                try {
+                    stream = await navigator.mediaDevices.getDisplayMedia({
+                        video: true,
+                        audio: true
+                    });
+                } catch (e) {
+                    window.alert('请分享系统音频');
+                    return;
+                }
+                if (!stream || stream.getAudioTracks().length === 0) {
+                    window.alert('请分享系统音频');
+                    return;
+                }
+                for (let track of stream.getVideoTracks()) {
+                    track.stop();
+                    stream.removeTrack(track);
+                }
+                streamRef.current = stream;
+            }
+            let nowSubtitleNode = subtitle.getNowSubtitleNode();
+            if (!nowSubtitleNode) {
+                return;
+            }
+            contextFromVideo.imgDataUrl = await captureVisibleTab(nowSubtitleNode);
+            contextFromVideo.videoSentenceVoiceDataUrl = await captureAudio(nowSubtitleNode, stream);
+            setDisplay('block');
+            video.pause();
+            sendResponse(contextFromVideo);
+        }
+
+        function captureVisibleTab(nowSubtitleNode: SubtitleNode) {
+            video.seek(nowSubtitleNode.begin);
+            while (video.getCurrentTime() > nowSubtitleNode.begin + 0.1) {
+                delay(100);
+                continue;
+            }
+            return new Promise<string>((resolve) => {
+                chrome.runtime.sendMessage({ contentScriptQuery: 'captureVisibleTab' }, (imgDataUrl) => {
+                    resolve(imgDataUrl);
+                });
+            });
+        }
+
+        async function captureAudio(nowSubtitleNode: SubtitleNode, stream: MediaStream) {
+            let chunks: Array<Blob> = [];
+            const mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.ondataavailable = (e) => {
+                chunks.push(e.data);
+            };
+
+            let mediaRecorderOnStopPromise = new Promise<Blob>((resolve) => {
+                mediaRecorder.addEventListener('stop', () => {
+                    const blob = new Blob(chunks);
+                    resolve(blob);
+                });
+            });
+
+            const timeExtend = 200;
+            const duration = (nowSubtitleNode.end - nowSubtitleNode.begin) * 1000 + timeExtend;
+            mediaRecorder.start();
+            video.play();
+            setTimeout(() => {
+                mediaRecorder.stop();
+            }, duration);
+
+            let blob = await mediaRecorderOnStopPromise;
+            let reader = new window.FileReader();
+            let promise = new Promise<string>((resolve) => {
+                reader.addEventListener('loadend', () => {
+                    let base64 = reader.result?.toString();
+                    if (!base64) {
+                        base64 = '';
+                    }
+                    resolve(base64);
+                });
+            });
+            reader.readAsDataURL(blob);
+            return promise;
+        }
+
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             if (request.backgroundQuery === 'getContextFromVideo') {
-                let contextFromVideo: ContextFromVideo = {
-                    sentenceVoiceUrl: 'test',
-                    imgDataUrl: 'test'
-                };
-                // TODO: get sentenceVoiceUrl and imgDataUrl
-                chrome.tabCapture.capture({ audio: true }, (stream) => {
-                    if (!stream) {
-                        return;
-                    }
-                    let track = stream?.getAudioTracks()[0];
-                    const audioCtx = new AudioContext();
-                    const source = audioCtx.createMediaStreamSource(stream);
-                    console.log(123);
-                });
-                sendResponse(contextFromVideo);
+                getContextFromVideo(sendResponse);
+                return true;
             }
         });
     }, []);
 
     return ReactDOM.createPortal(
         <SubtitleWrapper
+            css={css`
+                display: ${display};
+            `}
             onClick={(e: any) => {
                 video.pause();
             }}

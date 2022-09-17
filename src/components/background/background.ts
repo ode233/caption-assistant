@@ -27,8 +27,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             return true; // Will respond asynchronously.
         }
         case 'captureVisibleTab': {
-            chrome.tabs.captureVisibleTab((imgUrl: string) => {
-                sendResponse(imgUrl);
+            chrome.tabs.captureVisibleTab((imgDataUrl: string) => {
+                sendResponse(imgDataUrl);
             });
             return true;
         }
@@ -62,4 +62,16 @@ async function checkAnkiConfig() {
         console.log('createModel');
         let resp = await createModel();
     }
+}
+
+function saveToFile(blob: Blob, name: string) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    document.body.appendChild(a);
+    a.style.display = 'none';
+    a.href = url;
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(url);
+    a.remove();
 }
