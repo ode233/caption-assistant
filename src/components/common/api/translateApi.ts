@@ -4,3 +4,8 @@ export const getYoudaoTranslate = async (content: string) => {
     );
     return response.json();
 };
+
+export const getPhonetic = async (text: string) => {
+    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${text}`);
+    return response.json();
+};

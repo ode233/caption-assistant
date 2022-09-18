@@ -165,39 +165,22 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
         });
 
         async function getContextFromVideo(sendResponse: Function) {
-            setDisplay('none');
-            video.pause();
             let contextFromVideo: ContextFromVideo = {
                 videoSentenceVoiceDataUrl: '',
                 imgDataUrl: ''
             };
-            // TODO: hide subtitle and popup
-            // get sentenceVoiceUrl
-            let stream = streamRef.current;
-            if (!stream || stream.getAudioTracks().length === 0) {
-                try {
-                    stream = await navigator.mediaDevices.getDisplayMedia({
-                        video: true,
-                        audio: true
-                    });
-                } catch (e) {
-                    window.alert('请分享系统音频');
-                    return;
-                }
-                if (!stream || stream.getAudioTracks().length === 0) {
-                    window.alert('请分享系统音频');
-                    return;
-                }
-                for (let track of stream.getVideoTracks()) {
-                    track.stop();
-                    stream.removeTrack(track);
-                }
-                streamRef.current = stream;
-            }
             let nowSubtitleNode = subtitle.getNowSubtitleNode();
             if (!nowSubtitleNode) {
+                sendResponse(contextFromVideo);
                 return;
             }
+            let stream = await getStream();
+            if (!stream) {
+                sendResponse(contextFromVideo);
+                return;
+            }
+            setDisplay('none');
+            video.pause();
             contextFromVideo.imgDataUrl = await captureVisibleTab(nowSubtitleNode);
             contextFromVideo.videoSentenceVoiceDataUrl = await captureAudio(nowSubtitleNode, stream);
             setDisplay('block');
@@ -205,10 +188,38 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
             sendResponse(contextFromVideo);
         }
 
-        function captureVisibleTab(nowSubtitleNode: SubtitleNode) {
+        async function getStream() {
+            let stream = streamRef.current;
+            if (stream && stream.getAudioTracks().length > 0) {
+                return stream;
+            }
+            try {
+                stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: true,
+                    audio: true
+                });
+            } catch (e) {
+                window.alert('请分享系统音频');
+                return null;
+            }
+            if (!stream || stream.getAudioTracks().length === 0) {
+                window.alert('请分享系统音频');
+                return null;
+            }
+            for (let track of stream.getVideoTracks()) {
+                track.stop();
+                stream.removeTrack(track);
+            }
+            streamRef.current = stream;
+            return stream;
+        }
+
+        async function captureVisibleTab(nowSubtitleNode: SubtitleNode) {
             video.seek(nowSubtitleNode.begin);
-            while (video.getCurrentTime() > nowSubtitleNode.begin + 0.1) {
-                delay(100);
+            let el = document.getElementById(SUBTITLE_WRAPPER_ID);
+            // TODO: hide subtitle
+            while (video.getCurrentTime() > nowSubtitleNode.begin + 0.1 || el?.offsetWidth !== 0) {
+                await delay(100);
                 continue;
             }
             return new Promise<string>((resolve) => {

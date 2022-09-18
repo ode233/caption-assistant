@@ -14,6 +14,7 @@ import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import { InputAdornment, InputLabel, Link, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import { WATCH_URL_LIST } from '../../common/constants/watchVideoConstants';
+import { delay } from '../../common/function/function';
 
 const leftClick = 0;
 
@@ -54,6 +55,7 @@ class PopupProps {
     public pageUrl = '';
     public imgDataUrl = '';
     public ankiOpen = false;
+    public isLoadingAnki = false;
 }
 
 interface ContextFromVideo {
@@ -66,18 +68,36 @@ const Popup = () => {
 
     const popupPropsRef = useRef(popupProps);
 
-    console.log('render');
+    console.log('render popupProps', popupProps);
 
     useEffect(() => {
         popupPropsRef.current = popupProps;
     });
 
     useEffect(() => {
-        document.addEventListener('mouseup', (event: MouseEvent) => {
-            chrome.runtime.sendMessage({
-                contentScriptQuery: 'captureAudio'
+        function getPhonetic(text: string) {
+            return new Promise<string>((resolve) => {
+                chrome.runtime.sendMessage({ contentScriptQuery: 'getPhonetic', text: text }, (phonetic) => {
+                    resolve(phonetic);
+                });
             });
-            if (popupPropsRef.current.ankiOpen) {
+        }
+
+        function youdaoTranslate(content: string) {
+            return new Promise<string>((resolve) => {
+                chrome.runtime.sendMessage({ contentScriptQuery: 'youdaoTranslate', content: content }, (tgt) => {
+                    resolve(tgt);
+                });
+            });
+        }
+
+        document.addEventListener('mouseup', async (event: MouseEvent) => {
+            console.log('mouseup popupPropsRef.current', popupPropsRef.current);
+
+            if (popupPropsRef.current.dictDisplay === 'block') {
+                return;
+            }
+            if (popupPropsRef.current.isLoadingAnki) {
                 return;
             }
             let text = getText();
@@ -86,37 +106,14 @@ const Popup = () => {
             }
 
             let popupProps = new PopupProps();
-            if (isWord(text)) {
-                fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${text}`)
-                    .then((response) => {
-                        if (response.ok) {
-                            return response.json();
-                        }
-                    })
-                    .then((data) => {
-                        if (!data) {
-                            return;
-                        }
-                        let phonetic = data[0].phonetic;
-                        if (phonetic) {
-                            popupProps.textPhonetic = phonetic;
-                            setPopupProps({ ...popupProps });
-                        }
-                    });
-            }
-            chrome.runtime.sendMessage({ contentScriptQuery: 'youdaoTranslate', content: text }, (tgt) => {
-                popupProps.textTranslate = tgt;
-                setPopupProps({ ...popupProps });
-            });
             let sentence = getSentence();
-            chrome.runtime.sendMessage({ contentScriptQuery: 'youdaoTranslate', content: sentence }, (tgt) => {
-                popupProps.sentenceTranslate = tgt;
-                setPopupProps({ ...popupProps });
-            });
-            chrome.runtime.sendMessage({ contentScriptQuery: 'captureVisibleTab' }, (imgUrl) => {
-                popupProps.imgDataUrl = imgUrl;
-                setPopupProps({ ...popupProps });
-            });
+
+            // TODO: loading page
+            if (isWord(text)) {
+                popupProps.textPhonetic = await getPhonetic(text);
+            }
+            popupProps.textTranslate = await youdaoTranslate(text);
+            popupProps.sentenceTranslate = await youdaoTranslate(sentence);
 
             popupProps.dictDisplay = 'block';
             popupProps.dictLeft = event.clientX + 10;
@@ -147,7 +144,9 @@ const Popup = () => {
         });
     }, []);
 
-    const onClickOpenAnkiPopup = () => {
+    const onClickOpenAnkiPopup = async () => {
+        window.getSelection()?.removeAllRanges();
+        popupProps.isLoadingAnki = true;
         popupProps.dictDisplay = 'none';
         setPopupProps({ ...popupProps });
         let isWatchVideo = false;
@@ -160,6 +159,12 @@ const Popup = () => {
         if (isWatchVideo) {
             chrome.runtime.sendMessage({ contentScriptQuery: 'getContextFromVideo' }, (data: ContextFromVideo) => {
                 console.log('contextFromVideo', data);
+                if (!data.imgDataUrl) {
+                    console.log('getContextFromVideo err');
+                    popupProps.isLoadingAnki = false;
+                    setPopupProps({ ...popupProps });
+                    return;
+                }
                 popupProps.videoSentenceVoiceDataUrl = data.videoSentenceVoiceDataUrl;
                 popupProps.imgDataUrl = data.imgDataUrl;
                 popupProps.ankiOpen = true;
@@ -172,6 +177,7 @@ const Popup = () => {
     };
 
     const onClickCloseAnki = () => {
+        popupProps.isLoadingAnki = false;
         popupProps.ankiOpen = false;
         setPopupProps({ ...popupProps });
     };
@@ -182,6 +188,7 @@ const Popup = () => {
                 console.log('ankiExport err', data);
                 return;
             }
+            popupProps.isLoadingAnki = false;
             popupProps.ankiOpen = false;
             setPopupProps({ ...popupProps });
         });
