@@ -20,6 +20,14 @@ module.exports = {
         //
         // myGlobal: false
     },
+    overrides: [
+        {
+            files: ['*.ts', '*.tsx'],
+            rules: {
+                'no-undef': 'off'
+            }
+        }
+    ],
     plugins: ['spellcheck'],
     rules: {
         // 自定义您的规则
