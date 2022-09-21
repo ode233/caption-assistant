@@ -67,7 +67,9 @@ const frontHTML = `
 <a href="{{PageUrl}}">{{PageTitle}}</a>
 </section>
 
+<section class="srcImg">
 {{Img}}
+<section
 `;
 
 const backHTML = `
@@ -91,7 +93,9 @@ const backHTML = `
 <a href="{{PageUrl}}">{{PageTitle}}</a>
 </section>
 
+<section class="srcImg">
 {{Img}}
+<section
 `;
 
 // eslint-disable-next-line spellcheck/spell-checker
@@ -162,6 +166,10 @@ const css = `
   .typeMissed {
     color: #fff;
     background: #7C8A99;
+  }
+
+  .source img {
+    width: inherit;
   }
 `;
 

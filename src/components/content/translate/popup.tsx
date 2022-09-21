@@ -159,7 +159,6 @@ const Popup = () => {
         });
 
         document.addEventListener('mousedown', (event: MouseEvent) => {
-            console.log('mousedown', event.clientX, event.clientY);
             if (
                 popupPropsRef.current.dictDisplay === 'block' &&
                 event.button === leftClick &&

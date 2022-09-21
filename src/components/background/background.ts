@@ -2,8 +2,7 @@ import 'regenerator-runtime/runtime.js';
 import { addNote, createDeck, createModel, getDeckNames, getModelNames } from '../common/api/ankiApi';
 import { getPhonetic, getYoudaoTranslate } from '../common/api/translateApi';
 import { ANKI_DECK_NAME, ANKI_MODEL_NAME } from '../common/constants/ankiConstants';
-import { WATCH_NETFLIX_URL, WATCH_URL_LIST } from '../common/constants/watchVideoConstants';
-import { PopupProps } from '../content/translate/popup';
+import { WATCH_NETFLIX_URL } from '../common/constants/watchVideoConstants';
 
 console.log('background');
 
@@ -20,16 +19,21 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     switch (request.contentScriptQuery) {
         case 'getPhonetic': {
-            getPhonetic(request.text).then((data) => {
-                let phonetic = '';
-                try {
-                    phonetic = data[0].phonetic;
-                } catch (e) {
-                    console.log('getPhonetic err', e, data);
-                    phonetic = '';
-                }
-                sendResponse(phonetic);
-            });
+            getPhonetic(request.text)
+                .then((data) => {
+                    let phonetic = '';
+                    try {
+                        phonetic = data[0].phonetic;
+                    } catch (e) {
+                        console.log('getPhonetic err', e, data);
+                        phonetic = '';
+                    }
+                    sendResponse(phonetic);
+                })
+                .catch((e) => {
+                    console.log('getPhonetic err', e);
+                    sendResponse('');
+                });
             return true; // Will respond asynchronously.
         }
         case 'youdaoTranslate': {

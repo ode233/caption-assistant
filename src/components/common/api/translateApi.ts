@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from '../function/function';
+
 export const getYoudaoTranslate = async (content: string) => {
     const response = await fetch(
         'https://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i=' + encodeURIComponent(content)
@@ -6,7 +8,7 @@ export const getYoudaoTranslate = async (content: string) => {
 };
 
 export const getPhonetic = async (text: string) => {
-    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${text}`);
+    const response = await fetchWithTimeout(`https://api.dictionaryapi.dev/api/v2/entries/en/${text}`);
     return response.json();
 };
 

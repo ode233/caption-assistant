@@ -59,7 +59,8 @@ module.exports = {
                     'onstop',
                     'webpack',
                     'onloadend',
-                    'loadend'
+                    'loadend',
+                    'undef'
                 ]
             }
         ]
