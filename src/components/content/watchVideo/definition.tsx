@@ -44,7 +44,7 @@ class SubtitleNode {
 class Subtitle {
     public subtitleNodeList: Array<SubtitleNode> = [];
 
-    public nowHasSubtitle = false;
+    public nowSubtitleElementString = '';
     public nowSubTitleIndex = -1;
 
     public constructor(subtitleNodeList: Array<SubtitleNode>) {
@@ -72,7 +72,7 @@ class Subtitle {
     }
 
     public getPrevSubtitleTime(): number | null {
-        let prevIndex = this.nowHasSubtitle ? this.nowSubTitleIndex - 1 : this.nowSubTitleIndex;
+        let prevIndex = this.nowSubtitleElementString ? this.nowSubTitleIndex - 1 : this.nowSubTitleIndex;
         if (prevIndex < 0) {
             return null;
         }
@@ -114,28 +114,50 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
     const [subtitleElementString, setSubtitleElementString] = useState('');
     const [display, setDisplay] = useState('block');
 
+    const subtitleElementStringRef = useRef(subtitleElementString);
     const streamRef = useRef(new MediaStream());
+    const displayRef = useRef(display);
+
+    subtitleElementStringRef.current = subtitleElementString;
+    displayRef.current = display;
+
+    console.log('SubtitleContainer render', displayRef.current, subtitleElementString);
 
     useEffect(() => {
         console.log('SubtitleContainer init');
 
         video.setOntimeupdate(() => {
+            console.log('displayRef.current', displayRef.current);
+            if (displayRef.current === 'none') {
+                return;
+            }
+
             const currentTime = video.getCurrentTime();
             let subtitleNode = subtitle.getSubtitleByTime(currentTime);
 
+            let nowSubTitleIndex;
+            let nowSubtitleElementString;
+
             if (subtitleNode === null) {
-                setSubtitleElementString('');
-                subtitle.nowSubTitleIndex = -1;
-                subtitle.nowHasSubtitle = false;
+                nowSubTitleIndex = -1;
+                nowSubtitleElementString = '';
             } else if (currentTime > subtitleNode.end) {
-                setSubtitleElementString('');
-                subtitle.nowSubTitleIndex = parseInt(subtitleNode.element.getAttribute('index')!, 10);
-                subtitle.nowHasSubtitle = false;
+                nowSubTitleIndex = parseInt(subtitleNode.element.getAttribute('index')!, 10);
+                nowSubtitleElementString = '';
             } else {
-                setSubtitleElementString(subtitleNode.element.outerHTML);
-                subtitle.nowSubTitleIndex = parseInt(subtitleNode.element.getAttribute('index')!, 10);
-                subtitle.nowHasSubtitle = true;
+                nowSubTitleIndex = parseInt(subtitleNode.element.getAttribute('index')!, 10);
+                nowSubtitleElementString = subtitleNode.element.outerHTML;
             }
+
+            if (
+                subtitle.nowSubTitleIndex === nowSubTitleIndex &&
+                subtitle.nowSubtitleElementString === nowSubtitleElementString
+            ) {
+                return;
+            }
+            subtitle.nowSubTitleIndex = nowSubTitleIndex;
+            subtitle.nowSubtitleElementString = nowSubtitleElementString;
+            setSubtitleElementString(nowSubtitleElementString);
         });
 
         mountElement.addEventListener('keydown', (event) => {
@@ -215,15 +237,12 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
         }
 
         async function captureVisibleTab(nowSubtitleNode: SubtitleNode) {
+            // hide subtitle
+            await delay(100);
             video.seek(nowSubtitleNode.begin);
-            let el = document.getElementById(SUBTITLE_WRAPPER_ID);
-            // TODO: hide subtitle
-            while (video.getCurrentTime() > nowSubtitleNode.begin + 0.1 || el?.offsetWidth !== 0) {
-                await delay(100);
-                continue;
-            }
             return new Promise<string>((resolve) => {
                 chrome.runtime.sendMessage({ contentScriptQuery: 'captureVisibleTab' }, (imgDataUrl) => {
+                    console.log('captureVisibleTab', displayRef.current);
                     resolve(imgDataUrl);
                 });
             });

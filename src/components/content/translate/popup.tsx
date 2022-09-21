@@ -12,7 +12,16 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
-import { InputAdornment, InputLabel, Link, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import {
+    Box,
+    CircularProgress,
+    InputAdornment,
+    InputLabel,
+    Link,
+    ListItem,
+    ListItemIcon,
+    ListItemText
+} from '@mui/material';
 import { WATCH_URL_LIST } from '../../common/constants/watchVideoConstants';
 import { delay } from '../../common/function/function';
 
@@ -38,6 +47,7 @@ const Text = styled.h3`
 `;
 
 class PopupProps {
+    public dictLoading = true;
     public dictDisplay = 'none';
     public dictLeft = 0;
     public dictTop = 0;
@@ -68,7 +78,7 @@ const Popup = () => {
 
     const popupPropsRef = useRef(popupProps);
 
-    console.log('render popupProps', popupProps);
+    console.log('Popup render');
 
     useEffect(() => {
         popupPropsRef.current = popupProps;
@@ -92,8 +102,6 @@ const Popup = () => {
         }
 
         document.addEventListener('mouseup', async (event: MouseEvent) => {
-            console.log('mouseup popupPropsRef.current', popupPropsRef.current);
-
             if (popupPropsRef.current.dictDisplay === 'block') {
                 return;
             }
@@ -108,13 +116,8 @@ const Popup = () => {
             let popupProps = new PopupProps();
             let sentence = getSentence();
 
-            // TODO: loading page
-            if (isWord(text)) {
-                popupProps.textPhonetic = await getPhonetic(text);
-            }
-            popupProps.textTranslate = await youdaoTranslate(text);
-            popupProps.sentenceTranslate = await youdaoTranslate(sentence);
-
+            // display loading page
+            popupProps.dictLoading = true;
             popupProps.dictDisplay = 'block';
             popupProps.dictLeft = event.clientX + 10;
             popupProps.dictTop = event.clientY + 10;
@@ -125,6 +128,15 @@ const Popup = () => {
             popupProps.pageIconUrl = window.location.origin + '/favicon.ico';
             popupProps.pageTitle = document.title;
             popupProps.pageUrl = document.URL;
+            setPopupProps({ ...popupProps });
+
+            // fetch value
+            if (isWord(text)) {
+                popupProps.textPhonetic = await getPhonetic(text);
+            }
+            popupProps.textTranslate = await youdaoTranslate(text);
+            popupProps.sentenceTranslate = await youdaoTranslate(sentence);
+            popupProps.dictLoading = false;
             setPopupProps({ ...popupProps });
         });
 
@@ -232,43 +244,60 @@ const Popup = () => {
                     top: ${popupProps.dictTop + 'px'};
                 `}
             >
-                <div>
-                    <Text style={{ marginTop: '0px' }}>
-                        {popupProps.text}&nbsp;&nbsp;&nbsp;&nbsp;{popupProps.textPhonetic}&nbsp;&nbsp;&nbsp;&nbsp;
-                        <BsVolumeUpFill
-                            style={{ fontSize: 'larger', verticalAlign: 'bottom' }}
-                            onClick={() => {
-                                let audio = new Audio(popupProps.textVoiceUrl);
-                                audio.play();
-                            }}
-                        />
-                    </Text>
-                    <Text>{popupProps.textTranslate}</Text>
-                    <BiExport
-                        style={{
-                            top: '20px',
-                            right: '20px',
-                            position: 'absolute',
-                            fontSize: 'larger',
-                            verticalAlign: 'bottom'
-                        }}
-                        onClick={onClickOpenAnkiPopup}
+                {popupProps.dictLoading && (
+                    <CircularProgress
+                        css={css`
+                            position: absolute;
+                            top: 0;
+                            right: 0;
+                            bottom: 0;
+                            left: 0;
+                            margin: auto;
+                        `}
                     />
-                </div>
-                <Divider />
-                <div>
-                    <Text>
-                        {popupProps.sentence}&nbsp;&nbsp;&nbsp;&nbsp;
-                        <BsVolumeUpFill
-                            style={{ fontSize: 'larger', verticalAlign: 'text-bottom' }}
-                            onClick={() => {
-                                let audio = new Audio(popupProps.sentenceVoiceUrl);
-                                audio.play();
-                            }}
-                        />
-                    </Text>
-                    <Text style={{ marginBottom: '0px' }}>{popupProps.sentenceTranslate}</Text>
-                </div>
+                )}
+                {!popupProps.dictLoading && (
+                    <div>
+                        <div>
+                            <Text style={{ marginTop: '0px' }}>
+                                {popupProps.text}&nbsp;&nbsp;&nbsp;&nbsp;{popupProps.textPhonetic}
+                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                <BsVolumeUpFill
+                                    style={{ fontSize: 'larger', verticalAlign: 'bottom' }}
+                                    onClick={() => {
+                                        let audio = new Audio(popupProps.textVoiceUrl);
+                                        audio.play();
+                                    }}
+                                />
+                            </Text>
+                            <Text>{popupProps.textTranslate}</Text>
+                            <BiExport
+                                css={css`
+                                    top: 20px;
+                                    right: 20px;
+                                    position: absolute;
+                                    font-size: larger;
+                                    vertical-align: bottom;
+                                `}
+                                onClick={onClickOpenAnkiPopup}
+                            />
+                        </div>
+                        <Divider />
+                        <div>
+                            <Text>
+                                {popupProps.sentence}&nbsp;&nbsp;&nbsp;&nbsp;
+                                <BsVolumeUpFill
+                                    style={{ fontSize: 'larger', verticalAlign: 'text-bottom' }}
+                                    onClick={() => {
+                                        let audio = new Audio(popupProps.sentenceVoiceUrl);
+                                        audio.play();
+                                    }}
+                                />
+                            </Text>
+                            <Text style={{ marginBottom: '0px' }}>{popupProps.sentenceTranslate}</Text>
+                        </div>
+                    </div>
+                )}
             </DictPopupWrapper>
             <AnkiPopupWrapper>
                 <Dialog
