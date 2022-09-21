@@ -121,13 +121,10 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
     subtitleElementStringRef.current = subtitleElementString;
     displayRef.current = display;
 
-    console.log('SubtitleContainer render', displayRef.current, subtitleElementString);
-
     useEffect(() => {
         console.log('SubtitleContainer init');
 
         video.setOntimeupdate(() => {
-            console.log('displayRef.current', displayRef.current);
             if (displayRef.current === 'none') {
                 return;
             }
@@ -242,7 +239,6 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
             video.seek(nowSubtitleNode.begin);
             return new Promise<string>((resolve) => {
                 chrome.runtime.sendMessage({ contentScriptQuery: 'captureVisibleTab' }, (imgDataUrl) => {
-                    console.log('captureVisibleTab', displayRef.current);
                     resolve(imgDataUrl);
                 });
             });

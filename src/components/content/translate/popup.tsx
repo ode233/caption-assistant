@@ -79,8 +79,6 @@ const Popup = () => {
 
     const popupPropsRef = useRef(popupProps);
 
-    console.log('Popup render');
-
     useEffect(() => {
         popupPropsRef.current = popupProps;
     });
@@ -117,11 +115,30 @@ const Popup = () => {
             let popupProps = new PopupProps();
             let sentence = getSentence();
 
+            let clientWidth = document.documentElement.clientWidth;
+            let clientHeight = document.documentElement.clientHeight;
+            let offset = 10;
+
+            let dictLeft = event.clientX + offset;
+            let dictTop = event.clientY + offset;
+            if (dictLeft + dictPopupWidth > clientWidth) {
+                let newDictLeft = event.clientX - dictPopupWidth - offset;
+                if (newDictLeft >= 0) {
+                    dictLeft = newDictLeft;
+                }
+            }
+            if (dictTop + dictPopupHeight > clientHeight) {
+                let newDictTop = event.clientY - dictPopupHeight - offset;
+                if (newDictTop >= 0) {
+                    dictTop = newDictTop;
+                }
+            }
+
             // display loading page
             popupProps.dictLoading = true;
             popupProps.dictDisplay = 'block';
-            popupProps.dictLeft = event.clientX + 10;
-            popupProps.dictTop = event.clientY + 10;
+            popupProps.dictLeft = dictLeft;
+            popupProps.dictTop = dictTop;
             popupProps.text = text;
             popupProps.textVoiceUrl = youdaoVoiceUrl + text;
             popupProps.sentence = sentence;
@@ -142,13 +159,14 @@ const Popup = () => {
         });
 
         document.addEventListener('mousedown', (event: MouseEvent) => {
+            console.log('mousedown', event.clientX, event.clientY);
             if (
+                popupPropsRef.current.dictDisplay === 'block' &&
+                event.button === leftClick &&
                 (event.clientX < popupPropsRef.current.dictLeft ||
                     event.clientX > popupPropsRef.current.dictLeft + dictPopupWidth ||
                     event.clientY < popupPropsRef.current.dictTop ||
-                    event.clientY > popupPropsRef.current.dictTop + dictPopupHeight) &&
-                popupPropsRef.current.dictDisplay === 'block' &&
-                event.button === leftClick
+                    event.clientY > popupPropsRef.current.dictTop + dictPopupHeight)
             ) {
                 window.getSelection()?.removeAllRanges();
                 popupPropsRef.current.dictDisplay = 'none';
@@ -171,7 +189,6 @@ const Popup = () => {
         }
         if (isWatchVideo) {
             chrome.runtime.sendMessage({ contentScriptQuery: 'getContextFromVideo' }, (data: ContextFromVideo) => {
-                console.log('contextFromVideo', data);
                 if (!data.imgDataUrl) {
                     console.log('getContextFromVideo err');
                     popupProps.isLoadingAnki = false;
