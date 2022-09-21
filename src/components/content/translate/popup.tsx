@@ -24,6 +24,7 @@ import {
 } from '@mui/material';
 import { WATCH_URL_LIST } from '../../common/constants/watchVideoConstants';
 import { delay } from '../../common/function/function';
+import { dataUrlToBlob } from '../../common/api/translateApi';
 
 const leftClick = 0;
 
@@ -353,9 +354,14 @@ const Popup = () => {
                                 endAdornment: (
                                     <InputAdornment position="start">
                                         <BsVolumeUpFill
-                                            onClick={() => {
-                                                let url = popupProps.videoSentenceVoiceDataUrl;
-                                                if (!url) {
+                                            onClick={async () => {
+                                                let url;
+                                                if (popupProps.videoSentenceVoiceDataUrl) {
+                                                    let blob = await dataUrlToBlob(
+                                                        popupProps.videoSentenceVoiceDataUrl
+                                                    );
+                                                    url = window.URL.createObjectURL(blob);
+                                                } else {
                                                     url = popupProps.sentenceVoiceUrl;
                                                 }
                                                 if (!url) {

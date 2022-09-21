@@ -9,3 +9,8 @@ export const getPhonetic = async (text: string) => {
     const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${text}`);
     return response.json();
 };
+
+export const dataUrlToBlob = async (dataUrl: string) => {
+    const response = await fetch(dataUrl);
+    return response.blob();
+};
