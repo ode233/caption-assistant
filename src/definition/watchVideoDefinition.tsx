@@ -5,11 +5,7 @@ import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import { delay } from '../utils/utils';
 import { ContextFromVideo } from '../components/content/translate/popup';
-
-const SUBTITLE_WRAPPER_ID = 'subtitle-assistant-wrapper';
-
-const PREV = 'a';
-const NEXT = 'd';
+import { NEXT, PREV, SUBTITLE_WRAPPER_ID } from '../constants/watchVideoConstants';
 
 interface SubtitleContainerProps {
     video: Video;

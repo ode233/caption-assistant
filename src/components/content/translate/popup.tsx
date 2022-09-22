@@ -23,16 +23,14 @@ import {
 } from '@mui/material';
 import { WATCH_URL_LIST } from '../../../constants/watchVideoConstants';
 import { dataUrlToBlob } from '../../../api/translateApi';
-
-const leftClick = 0;
-
-const dictPopupWidth = 420;
-const dictPopupHeight = 320;
-
-const ankiPopupWidth = 600;
-const ankiPopupHeight = 800;
-
-const youdaoVoiceUrl = 'https://dict.youdao.com/dictvoice?type=0&audio=';
+import {
+    DICT_POPUP_WIDTH,
+    DICT_POPUP_HEIGHT,
+    YOUDAO_VOICE_URL,
+    LEFT_CLICK,
+    ANKI_POPUP_HEIGHT,
+    ANKI_POPUP_WIDTH
+} from '../../../constants/translateConstants';
 
 const DictPopupWrapper = styled.div``;
 
@@ -119,14 +117,14 @@ const Popup = () => {
 
             let dictLeft = event.clientX + offset;
             let dictTop = event.clientY + offset;
-            if (dictLeft + dictPopupWidth > clientWidth) {
-                let newDictLeft = event.clientX - dictPopupWidth - offset;
+            if (dictLeft + DICT_POPUP_WIDTH > clientWidth) {
+                let newDictLeft = event.clientX - DICT_POPUP_WIDTH - offset;
                 if (newDictLeft >= 0) {
                     dictLeft = newDictLeft;
                 }
             }
-            if (dictTop + dictPopupHeight > clientHeight) {
-                let newDictTop = event.clientY - dictPopupHeight - offset;
+            if (dictTop + DICT_POPUP_HEIGHT > clientHeight) {
+                let newDictTop = event.clientY - DICT_POPUP_HEIGHT - offset;
                 if (newDictTop >= 0) {
                     dictTop = newDictTop;
                 }
@@ -138,9 +136,9 @@ const Popup = () => {
             popupProps.dictLeft = dictLeft;
             popupProps.dictTop = dictTop;
             popupProps.text = text;
-            popupProps.textVoiceUrl = youdaoVoiceUrl + text;
+            popupProps.textVoiceUrl = YOUDAO_VOICE_URL + text;
             popupProps.sentence = sentence;
-            popupProps.sentenceVoiceUrl = youdaoVoiceUrl + sentence;
+            popupProps.sentenceVoiceUrl = YOUDAO_VOICE_URL + sentence;
             popupProps.pageIconUrl = window.location.origin + '/favicon.ico';
             popupProps.pageTitle = document.title;
             popupProps.pageUrl = document.URL;
@@ -159,11 +157,11 @@ const Popup = () => {
         document.addEventListener('mousedown', (event: MouseEvent) => {
             if (
                 popupPropsRef.current.dictDisplay === 'block' &&
-                event.button === leftClick &&
+                event.button === LEFT_CLICK &&
                 (event.clientX < popupPropsRef.current.dictLeft ||
-                    event.clientX > popupPropsRef.current.dictLeft + dictPopupWidth ||
+                    event.clientX > popupPropsRef.current.dictLeft + DICT_POPUP_WIDTH ||
                     event.clientY < popupPropsRef.current.dictTop ||
-                    event.clientY > popupPropsRef.current.dictTop + dictPopupHeight)
+                    event.clientY > popupPropsRef.current.dictTop + DICT_POPUP_HEIGHT)
             ) {
                 window.getSelection()?.removeAllRanges();
                 popupPropsRef.current.dictDisplay = 'none';
@@ -251,8 +249,8 @@ const Popup = () => {
                     margin: auto;
                     padding: 20px;
                     border: 1px solid rgba(0, 0, 0, 0.12);
-                    width: ${dictPopupWidth + 'px'};
-                    height: ${dictPopupHeight + 'px'};
+                    width: ${DICT_POPUP_WIDTH + 'px'};
+                    height: ${DICT_POPUP_HEIGHT + 'px'};
                     z-index: 10001;
                     display: ${popupProps.dictDisplay};
                     left: ${popupProps.dictLeft + 'px'};
@@ -325,8 +323,8 @@ const Popup = () => {
                     <DialogContent
                         css={css`
                             overflow: auto;
-                            width: ${ankiPopupWidth + 'px'};
-                            height: ${ankiPopupHeight + 'px'};
+                            width: ${ANKI_POPUP_WIDTH + 'px'};
+                            height: ${ANKI_POPUP_HEIGHT + 'px'};
                             display: flex;
                             flex-direction: column;
                             gap: 16px;

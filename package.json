@@ -1,7 +1,7 @@
 {
-    "name": "subtitle",
+    "name": "learning-words-from-context",
     "version": "1.0.0",
-    "description": "subtitle",
+    "description": "learning words from context",
     "license": "MIT",
     "main": "index.js",
     "scripts": {
@@ -15,7 +15,7 @@
     "author": "ode233",
     "repository": {
         "type": "git",
-        "url": "https://github.com/ode233/subtitle-assistant.git"
+        "url": "https://github.com/ode233/learning-words-from-context.git"
     },
     "dependencies": {
         "@emotion/react": "^11.10.4",

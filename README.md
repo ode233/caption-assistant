@@ -1,8 +1,8 @@
-# Chrome Subtitle Extension
+# Chrome Dictionary Extension
 
 ![build](https://github.com/chibat/chrome-extension-typescript-starter/workflows/build/badge.svg)
 
-A Chrome extension that provides subtitle fixed, jump, translation and other related functions.
+A Chrome dictionary extension that provide functions such as translation and Anki card making when watching video on Netflix, Youtube, Local File, etc.
 
 ## Setup
 
