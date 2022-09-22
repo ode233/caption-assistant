@@ -97,6 +97,7 @@ async function checkAnkiConfig() {
 async function applyUserConfig() {
     let userConfig = await getUserConfig();
     if (!userConfig) {
+        translator = new YoudaoFreeTranslator();
         return;
     }
     if (userConfig.caiyunToken) {
