@@ -1,4 +1,4 @@
-import { SubtitleNode, SUBTITLE_WRAPPER_ID } from '../definition';
+import { SubtitleNode, SUBTITLE_WRAPPER_ID } from '../../../../definition/watchVideoDefinition';
 
 let subtitleNodeList: Array<SubtitleNode> = [];
 

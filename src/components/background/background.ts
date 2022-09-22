@@ -1,10 +1,16 @@
 import 'regenerator-runtime/runtime.js';
-import { addNote, createDeck, createModel, getDeckNames, getModelNames } from '../common/api/ankiApi';
-import { getPhonetic, getYoudaoTranslate } from '../common/api/translateApi';
-import { ANKI_DECK_NAME, ANKI_MODEL_NAME } from '../common/constants/ankiConstants';
-import { WATCH_NETFLIX_URL } from '../common/constants/watchVideoConstants';
+import { addNote, createDeck, createModel, getDeckNames, getModelNames } from '../../api/ankiApi';
+import { getPhonetic, getYoudaoFreeTranslate } from '../../api/translateApi';
+import { ANKI_DECK_NAME, ANKI_MODEL_NAME } from '../../constants/ankiConstants';
+import { WATCH_NETFLIX_URL } from '../../constants/watchVideoConstants';
+import { CaiyunTranslator, Translator, YoudaoFreeTranslator } from '../../definition/translatorDefinition';
+import { getUserConfig } from '../../definition/userConfigDefinition';
 
 console.log('background');
+
+let translator: Translator<any>;
+
+init();
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     // read changeInfo data and do something with it (like read the url)
@@ -17,7 +23,11 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    switch (request.contentScriptQuery) {
+    switch (request.queryBackground) {
+        case 'applyUserConfig': {
+            applyUserConfig();
+            return;
+        }
         case 'getPhonetic': {
             getPhonetic(request.text)
                 .then((data) => {
@@ -36,18 +46,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 });
             return true; // Will respond asynchronously.
         }
-        case 'youdaoTranslate': {
-            getYoudaoTranslate(request.content).then((data) => {
-                let tgt = '';
-                try {
-                    tgt = data.translateResult[0][0].tgt;
-                } catch (e) {
-                    console.log('youdaoTranslate err', e, data);
-                    tgt = '';
-                }
+        case 'translate': {
+            // TODO: package custom translate to Translator class, unify translate invoke
+            translator.translate(request.content).then((tgt) => {
                 sendResponse(tgt);
             });
-            return true; // Will respond asynchronously.
+            return true;
         }
         case 'captureVisibleTab': {
             chrome.tabs.captureVisibleTab((imgDataUrl: string) => {
@@ -72,7 +76,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
-checkAnkiConfig();
+function init() {
+    checkAnkiConfig();
+    applyUserConfig();
+}
 
 async function checkAnkiConfig() {
     let deckNames: [string] = (await getDeckNames()).result;
@@ -83,7 +90,19 @@ async function checkAnkiConfig() {
     let modelNames: [string] = (await getModelNames()).result;
     if (!modelNames.includes(ANKI_MODEL_NAME)) {
         console.log('createModel');
-        let resp = await createModel();
+        await createModel();
+    }
+}
+
+async function applyUserConfig() {
+    let userConfig = await getUserConfig();
+    if (!userConfig) {
+        return;
+    }
+    if (userConfig.caiyunToken) {
+        translator = new CaiyunTranslator({ token: userConfig.caiyunToken });
+    } else {
+        translator = new YoudaoFreeTranslator();
     }
 }
 

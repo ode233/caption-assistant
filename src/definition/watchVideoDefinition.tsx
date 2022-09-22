@@ -3,8 +3,8 @@ import { useEffect, useRef } from 'react';
 import { useState } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
-import { delay } from '../../common/function/function';
-import { ContextFromVideo } from '../translate/popup';
+import { delay } from '../utils/utils';
+import { ContextFromVideo } from '../components/content/translate/popup';
 
 const SUBTITLE_WRAPPER_ID = 'subtitle-assistant-wrapper';
 
@@ -238,7 +238,7 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
             await delay(100);
             video.seek(nowSubtitleNode.begin);
             return new Promise<string>((resolve) => {
-                chrome.runtime.sendMessage({ contentScriptQuery: 'captureVisibleTab' }, (imgDataUrl) => {
+                chrome.runtime.sendMessage({ queryBackground: 'captureVisibleTab' }, (imgDataUrl) => {
                     resolve(imgDataUrl);
                 });
             });

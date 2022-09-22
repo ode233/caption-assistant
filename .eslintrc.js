@@ -68,7 +68,9 @@ module.exports = {
                     'webpack',
                     'onloadend',
                     'loadend',
-                    'undef'
+                    'undef',
+                    'caiyun',
+                    'zh'
                 ]
             }
         ]

@@ -13,7 +13,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import {
-    Box,
     CircularProgress,
     InputAdornment,
     InputLabel,
@@ -22,9 +21,8 @@ import {
     ListItemIcon,
     ListItemText
 } from '@mui/material';
-import { WATCH_URL_LIST } from '../../common/constants/watchVideoConstants';
-import { delay } from '../../common/function/function';
-import { dataUrlToBlob } from '../../common/api/translateApi';
+import { WATCH_URL_LIST } from '../../../constants/watchVideoConstants';
+import { dataUrlToBlob } from '../../../api/translateApi';
 
 const leftClick = 0;
 
@@ -86,15 +84,15 @@ const Popup = () => {
     useEffect(() => {
         function getPhonetic(text: string) {
             return new Promise<string>((resolve) => {
-                chrome.runtime.sendMessage({ contentScriptQuery: 'getPhonetic', text: text }, (phonetic) => {
+                chrome.runtime.sendMessage({ queryBackground: 'getPhonetic', text: text }, (phonetic) => {
                     resolve(phonetic);
                 });
             });
         }
 
-        function youdaoTranslate(content: string) {
+        function translate(content: string) {
             return new Promise<string>((resolve) => {
-                chrome.runtime.sendMessage({ contentScriptQuery: 'youdaoTranslate', content: content }, (tgt) => {
+                chrome.runtime.sendMessage({ queryBackground: 'translate', content: content }, (tgt) => {
                     resolve(tgt);
                 });
             });
@@ -152,8 +150,8 @@ const Popup = () => {
             if (isWord(text)) {
                 popupProps.textPhonetic = await getPhonetic(text);
             }
-            popupProps.textTranslate = await youdaoTranslate(text);
-            popupProps.sentenceTranslate = await youdaoTranslate(sentence);
+            popupProps.textTranslate = await translate(text);
+            popupProps.sentenceTranslate = await translate(sentence);
             popupProps.dictLoading = false;
             setPopupProps({ ...popupProps });
         });
@@ -187,7 +185,7 @@ const Popup = () => {
             }
         }
         if (isWatchVideo) {
-            chrome.runtime.sendMessage({ contentScriptQuery: 'getContextFromVideo' }, (data: ContextFromVideo) => {
+            chrome.runtime.sendMessage({ queryBackground: 'getContextFromVideo' }, (data: ContextFromVideo) => {
                 if (!data.imgDataUrl) {
                     console.log('getContextFromVideo err');
                     popupProps.isLoadingAnki = false;
@@ -212,7 +210,7 @@ const Popup = () => {
     };
 
     const onClickExportAnki = async () => {
-        chrome.runtime.sendMessage({ contentScriptQuery: 'ankiExport', content: popupProps }, (data) => {
+        chrome.runtime.sendMessage({ queryBackground: 'ankiExport', content: popupProps }, (data) => {
             if (data.error) {
                 console.log('ankiExport err', data);
                 return;

@@ -1,6 +1,5 @@
-import React from 'react';
 import ReactDOM from 'react-dom';
-import { Subtitle, SubtitleContainer, SUBTITLE_WRAPPER_ID } from '../definition';
+import { Subtitle, SubtitleContainer, SUBTITLE_WRAPPER_ID } from '../../../../definition/watchVideoDefinition';
 import { getSubtitleNodeList, subtitleNodeList } from './subtitle';
 import { NetflixVideo } from './video';
 

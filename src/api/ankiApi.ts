@@ -1,4 +1,4 @@
-import { PopupProps } from '../../content/translate/popup';
+import { PopupProps } from '../components/content/translate/popup';
 import { ANKI_DECK_NAME, ANKI_MODEL_NAME } from '../constants/ankiConstants';
 
 const ankiBaseUrl = 'http://localhost:8765';

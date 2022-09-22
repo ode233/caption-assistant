@@ -1,4 +1,4 @@
-import { Video } from '../definition';
+import { Video } from '../../../../definition/watchVideoDefinition';
 
 class NetflixVideo implements Video {
     private video: HTMLVideoElement;
