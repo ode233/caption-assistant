@@ -1,6 +1,6 @@
 import 'regenerator-runtime/runtime.js';
 import { addNote, createDeck, createModel, getDeckNames, getModelNames } from '../../api/ankiApi';
-import { getPhonetic, getYoudaoFreeTranslate } from '../../api/translateApi';
+import { getPhonetic } from '../../api/translateApi';
 import { ANKI_DECK_NAME, ANKI_MODEL_NAME } from '../../constants/ankiConstants';
 import { WATCH_NETFLIX_URL } from '../../constants/watchVideoConstants';
 import { CaiyunTranslator, Translator, YoudaoFreeTranslator } from '../../definition/translatorDefinition';
@@ -31,11 +31,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         case 'getPhonetic': {
             getPhonetic(request.text)
                 .then((data) => {
-                    let phonetic = '';
+                    let phonetic;
                     try {
                         phonetic = data[0].phonetic;
                     } catch (e) {
                         console.log('getPhonetic err', e, data);
+                    }
+                    if (!phonetic) {
                         phonetic = '';
                     }
                     sendResponse(phonetic);

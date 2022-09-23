@@ -254,7 +254,7 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
                 });
             });
 
-            const timeExtend = 200;
+            const timeExtend = 500;
             const duration = (nowSubtitleNode.end - nowSubtitleNode.begin) * 1000 + timeExtend;
             mediaRecorder.start();
             video.play();

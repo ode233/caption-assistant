@@ -24,7 +24,7 @@ export const getCaiyunTranslate = async (content: string, token: string) => {
 };
 
 export const getPhonetic = async (text: string) => {
-    const response = await fetchWithTimeout(`https://api.dictionaryapi.dev/api/v2/entries/en/${text}`);
+    const response = await fetchWithTimeout(`https://api.dictionaryapi.dev/api/v2/entries/en/${text}`, {}, 500);
     return response.json();
 };
 

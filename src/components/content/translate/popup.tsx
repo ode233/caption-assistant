@@ -80,15 +80,35 @@ const Popup = () => {
     });
 
     useEffect(() => {
+        async function setTranslationAndPhonetic(popupProps: PopupProps) {
+            let promises = [];
+            promises.push(
+                getTranslation(popupProps.text),
+                getTranslation(popupProps.sentence)
+                // getPhonetic(popupProps.text)
+            );
+
+            await Promise.all(promises).then((values) => {
+                popupProps.textTranslate = values[0];
+                popupProps.sentenceTranslate = values[1];
+                // popupProps.textPhonetic = values[2];
+            });
+        }
+
+        // TODO: need lighter and faster phonetic api
         function getPhonetic(text: string) {
             return new Promise<string>((resolve) => {
+                if (!isWord(text)) {
+                    resolve('');
+                    return;
+                }
                 chrome.runtime.sendMessage({ queryBackground: 'getPhonetic', text: text }, (phonetic) => {
                     resolve(phonetic);
                 });
             });
         }
 
-        function translate(content: string) {
+        function getTranslation(content: string) {
             return new Promise<string>((resolve) => {
                 chrome.runtime.sendMessage({ queryBackground: 'translate', content: content }, (tgt) => {
                     resolve(tgt);
@@ -145,11 +165,7 @@ const Popup = () => {
             setPopupProps({ ...popupProps });
 
             // fetch value
-            if (isWord(text)) {
-                popupProps.textPhonetic = await getPhonetic(text);
-            }
-            popupProps.textTranslate = await translate(text);
-            popupProps.sentenceTranslate = await translate(sentence);
+            await setTranslationAndPhonetic(popupProps);
             popupProps.dictLoading = false;
             setPopupProps({ ...popupProps });
         });
@@ -271,10 +287,22 @@ const Popup = () => {
                 )}
                 {!popupProps.dictLoading && (
                     <div>
+                        <BiExport
+                            css={css`
+                                top: 20px;
+                                right: 20px;
+                                position: absolute;
+                                font-size: larger;
+                                vertical-align: bottom;
+                            `}
+                            onClick={onClickOpenAnkiPopup}
+                        />
                         <div>
                             <Text style={{ marginTop: '0px' }}>
-                                {popupProps.text}&nbsp;&nbsp;&nbsp;&nbsp;{popupProps.textPhonetic}
-                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                {popupProps.text}&nbsp;&nbsp;&nbsp;&nbsp;
+                                {popupProps.textPhonetic && (
+                                    <span>{popupProps.textPhonetic}&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                )}
                                 <BsVolumeUpFill
                                     style={{ fontSize: 'larger', verticalAlign: 'bottom' }}
                                     onClick={() => {
@@ -284,16 +312,6 @@ const Popup = () => {
                                 />
                             </Text>
                             <Text>{popupProps.textTranslate}</Text>
-                            <BiExport
-                                css={css`
-                                    top: 20px;
-                                    right: 20px;
-                                    position: absolute;
-                                    font-size: larger;
-                                    vertical-align: bottom;
-                                `}
-                                onClick={onClickOpenAnkiPopup}
-                            />
                         </div>
                         <Divider />
                         <div>
