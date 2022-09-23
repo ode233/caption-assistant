@@ -37,15 +37,12 @@ function getNewSubtitleElement(subtitleElement: HTMLParagraphElement, index: num
     let text = '';
     for (let node of subtitleElement.childNodes) {
         switch (node.nodeName) {
-            case 'span': {
-                text += node.textContent;
-                break;
-            }
             case 'br': {
                 text += '&#10;';
                 break;
             }
             default:
+                text += node.textContent;
                 break;
         }
     }
