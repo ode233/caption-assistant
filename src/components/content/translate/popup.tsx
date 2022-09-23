@@ -201,7 +201,7 @@ const Popup = () => {
         if (isWatchVideo) {
             chrome.runtime.sendMessage({ queryBackground: 'getContextFromVideo' }, (data: ContextFromVideo) => {
                 if (!data.imgDataUrl) {
-                    console.log('getContextFromVideo err');
+                    alert('getContextFromVideo err');
                     popupProps.isLoadingAnki = false;
                     setPopupProps({ ...popupProps });
                     return;
@@ -226,7 +226,7 @@ const Popup = () => {
     const onClickExportAnki = async () => {
         chrome.runtime.sendMessage({ queryBackground: 'ankiExport', content: popupProps }, (data) => {
             if (data.error) {
-                console.log('ankiExport err', data);
+                alert(`ankiExport err, ${data.error}`);
                 return;
             }
             popupProps.isLoadingAnki = false;

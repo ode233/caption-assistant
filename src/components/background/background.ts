@@ -86,12 +86,10 @@ function init() {
 async function checkAnkiConfig() {
     let deckNames: [string] = (await getDeckNames()).result;
     if (!deckNames.includes(ANKI_DECK_NAME)) {
-        console.log('createDeck');
         await createDeck();
     }
     let modelNames: [string] = (await getModelNames()).result;
     if (!modelNames.includes(ANKI_MODEL_NAME)) {
-        console.log('createModel');
         await createModel();
     }
 }

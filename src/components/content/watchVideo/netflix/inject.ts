@@ -25,7 +25,6 @@ window.addEventListener('getVideoPlayer', (e: any) => {
     videoPlayer = (window as any).netflix.appContext.state.playerApp.getAPI().videoPlayer;
     const allSessionIds = videoPlayer.getAllPlayerSessionIds();
     videoPlayer = videoPlayer.getVideoPlayerBySessionId(allSessionIds[0]);
-    console.log('found netflix videoPlay');
 });
 
 window.addEventListener('videoSeek', (e: any) => {

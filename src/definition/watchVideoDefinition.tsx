@@ -118,8 +118,6 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
     displayRef.current = display;
 
     useEffect(() => {
-        console.log('SubtitleContainer init');
-
         video.setOntimeupdate(() => {
             if (displayRef.current === 'none') {
                 return;

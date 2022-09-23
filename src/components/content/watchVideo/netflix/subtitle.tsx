@@ -25,7 +25,6 @@ function getSubtitleNodeList(e: any) {
         let subtitle = new SubtitleNode(begin, end, subtitleElement);
         subtitleNodeList.push(subtitle);
     }
-    console.log('getSubtitleNodeList', subtitleNodeList);
 }
 
 function getNewSubtitleElement(subtitleElement: HTMLParagraphElement, index: number): HTMLParagraphElement {

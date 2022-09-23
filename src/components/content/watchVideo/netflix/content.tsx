@@ -11,7 +11,6 @@ const scriptId = 'subtitle-assistant-script';
 if (document.getElementById(scriptId)) {
     location.reload();
 }
-console.log('inject');
 let s = document.createElement('script');
 s.id = 'subtitle-assistant-script';
 s.src = chrome.runtime.getURL('watchVideo/netflix/inject.js');
@@ -39,7 +38,6 @@ const documentObserver = new MutationObserver((mutations, observer) => {
     if (!video) {
         return;
     }
-    console.log('processVideo');
 
     window.dispatchEvent(new CustomEvent('getVideoPlayer'));
 
