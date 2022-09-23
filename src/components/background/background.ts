@@ -69,11 +69,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
         case 'getContextFromVideo': {
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                chrome.tabs.sendMessage(tabs[0].id!, { backgroundQuery: 'getContextFromVideo' }, (data) => {
+                chrome.tabs.sendMessage(tabs[0].id!, { queryTab: 'getContextFromVideo' }, (data) => {
                     sendResponse(data);
                 });
             });
             return true;
+        }
+        case 'playVideo': {
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                chrome.tabs.sendMessage(tabs[0].id!, { queryTab: 'playVideo' });
+            });
+            return;
         }
     }
 });

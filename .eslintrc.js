@@ -44,6 +44,7 @@ module.exports = {
                     ...getGlobalWords(),
                     'href',
                     'netflix',
+                    'nflxvideo',
                     'xml',
                     'br',
                     'player-timedtext',

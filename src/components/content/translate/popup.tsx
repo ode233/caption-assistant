@@ -31,6 +31,7 @@ import {
     ANKI_POPUP_HEIGHT,
     ANKI_POPUP_WIDTH
 } from '../../../constants/translateConstants';
+import { delay } from '../../../utils/utils';
 
 const DictPopupWrapper = styled.div``;
 
@@ -217,14 +218,16 @@ const Popup = () => {
         }
     };
 
-    const onClickCloseAnki = () => {
+    const onClickCloseAnki = async () => {
         popupProps.isLoadingAnki = false;
         popupProps.ankiOpen = false;
         setPopupProps({ ...popupProps });
+        await delay(100);
+        chrome.runtime.sendMessage({ queryBackground: 'playVideo' });
     };
 
     const onClickExportAnki = async () => {
-        chrome.runtime.sendMessage({ queryBackground: 'ankiExport', content: popupProps }, (data) => {
+        chrome.runtime.sendMessage({ queryBackground: 'ankiExport', content: popupProps }, async (data) => {
             if (data.error) {
                 alert(`ankiExport err, ${data.error}`);
                 return;
@@ -232,6 +235,8 @@ const Popup = () => {
             popupProps.isLoadingAnki = false;
             popupProps.ankiOpen = false;
             setPopupProps({ ...popupProps });
+            await delay(100);
+            chrome.runtime.sendMessage({ queryBackground: 'playVideo' });
         });
     };
 

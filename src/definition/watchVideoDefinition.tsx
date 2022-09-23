@@ -276,9 +276,15 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
         }
 
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-            if (request.backgroundQuery === 'getContextFromVideo') {
-                getContextFromVideo(sendResponse);
-                return true;
+            switch (request.queryTab) {
+                case 'getContextFromVideo': {
+                    getContextFromVideo(sendResponse);
+                    return true;
+                }
+                case 'playVideo': {
+                    video.play();
+                    return;
+                }
             }
         });
     }, []);
