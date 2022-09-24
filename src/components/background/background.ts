@@ -49,7 +49,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             return true; // Will respond asynchronously.
         }
         case 'translate': {
-            // TODO: package custom translate to Translator class, unify translate invoke
             translator.translate(request.content).then((tgt) => {
                 sendResponse(tgt);
             });
