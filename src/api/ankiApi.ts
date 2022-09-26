@@ -51,6 +51,8 @@ export const getModelNames = async () => {
 const frontHTML = `
 <section>{{cloze:SentenceCloze}}<section>
 
+<section>{{type:cloze:SentenceCloze}}</section>
+
 <section>{{SentenceTranslate}}</section>
 
 <section>TextVoice: {{TextVoice}} {{TextPhonetic}}</section>
@@ -69,7 +71,7 @@ const frontHTML = `
 
 <section class="srcImg">
 {{Img}}
-<section
+<section>
 `;
 
 const backHTML = `
@@ -95,7 +97,7 @@ const backHTML = `
 
 <section class="srcImg">
 {{Img}}
-<section
+<section>
 `;
 
 // eslint-disable-next-line spellcheck/spell-checker
