@@ -53,6 +53,8 @@ const frontHTML = `
 
 <section>{{type:cloze:SentenceCloze}}</section>
 
+<section>{{TextTranslate}}</section>
+
 <section>{{SentenceTranslate}}</section>
 
 <section>TextVoice: {{TextVoice}} {{TextPhonetic}}</section>
@@ -78,6 +80,8 @@ const backHTML = `
 <section>{{cloze:SentenceCloze}}<section>
 
 <section>{{type:cloze:SentenceCloze}}</section>
+
+<section>{{TextTranslate}}</section>
 
 <section>{{SentenceTranslate}}</section>
 
