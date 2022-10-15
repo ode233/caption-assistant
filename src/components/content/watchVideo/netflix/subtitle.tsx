@@ -15,24 +15,26 @@ function getSubtitleNodeList(e: any) {
         return;
     }
     subtitleNodeList = [];
-    for (let i = 0; i < subtitleElementList.length; i++) {
-        let subtitleElement = subtitleElementList[i];
+    let prevBegin = -1;
+    let prevSubtitleElement: HTMLParagraphElement;
+    for (let subtitleElement of subtitleElementList) {
         const beginString = subtitleElement.getAttribute('begin')?.replace('t', '');
         const begin = Number(beginString) / 10 ** 7;
         const endString = subtitleElement.getAttribute('end')?.replace('t', '');
         const end = Number(endString) / 10 ** 7;
-        subtitleElement = getNewSubtitleElement(subtitleElement, i);
-        let subtitle = new SubtitleNode(begin, end, subtitleElement);
-        subtitleNodeList.push(subtitle);
+        let text = getText(subtitleElement);
+        if (begin === prevBegin) {
+            addText(prevSubtitleElement!, text);
+            continue;
+        }
+        subtitleElement = createSubtitleElement(text, subtitleNodeList.length);
+        subtitleNodeList.push(new SubtitleNode(begin, end, subtitleElement));
+        prevBegin = begin;
+        prevSubtitleElement = subtitleElement;
     }
 }
 
-function getNewSubtitleElement(subtitleElement: HTMLParagraphElement, index: number): HTMLParagraphElement {
-    let newSubtitleElement = document.createElement('p');
-    newSubtitleElement.setAttribute('index', index.toString());
-
-    let newSpan = document.createElement('span');
-    newSpan.style.whiteSpace = 'pre-line';
+function getText(subtitleElement: HTMLParagraphElement) {
     let text = '';
     for (let node of subtitleElement.childNodes) {
         switch (node.nodeName) {
@@ -45,9 +47,18 @@ function getNewSubtitleElement(subtitleElement: HTMLParagraphElement, index: num
                 break;
         }
     }
-    newSpan.innerHTML = text;
-    newSubtitleElement.appendChild(newSpan);
+    return text;
+}
 
+function addText(subtitleElement: HTMLParagraphElement, text: string) {
+    subtitleElement.innerHTML += '&#10;' + text;
+}
+
+function createSubtitleElement(text: string, index: number): HTMLParagraphElement {
+    let newSubtitleElement = document.createElement('p');
+    newSubtitleElement.setAttribute('index', index.toString());
+    newSubtitleElement.style.whiteSpace = 'pre-line';
+    newSubtitleElement.innerHTML = text;
     return newSubtitleElement;
 }
 
