@@ -37,6 +37,9 @@ module.exports = {
             'warn',
             {
                 skipWords: [
+                    ...getWords('video.js'),
+                    ...getWords('@mui/system'),
+                    ...getWords('react-icons/ai'),
                     ...getWords('@emotion/react'),
                     ...getWords('react-icons/bs'),
                     ...getWords('axios'),
@@ -71,7 +74,9 @@ module.exports = {
                     'loadend',
                     'undef',
                     'caiyun',
-                    'zh'
+                    'zh',
+                    'videojs',
+                    'vjs'
                 ]
             }
         ]

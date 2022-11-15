@@ -11,7 +11,8 @@ module.exports = {
         background: path.join(rootDir, 'src/components/background/background.ts'),
         '/watchVideo/netflix/content': path.join(rootDir, 'src/components/content/watchVideo/netflix/content.tsx'),
         '/watchVideo/netflix/inject': path.join(rootDir, 'src/components/content/watchVideo/netflix/inject.ts'),
-        '/translate/content': path.join(rootDir, 'src/components/content/translate/content.tsx')
+        '/translate/content': path.join(rootDir, 'src/components/content/translate/content.tsx'),
+        localVideoPlayer: path.join(rootDir, 'src/components/popup/localVideoPlayer.tsx')
     },
     output: {
         path: path.join(rootDir, 'dist'),
@@ -21,7 +22,7 @@ module.exports = {
         splitChunks: {
             name: 'vendor',
             chunks(chunk) {
-                const notChunks = ['background', 'popup', 'options'];
+                const notChunks = ['background', 'popup', 'options', 'localVideoPlayer'];
                 return !notChunks.includes(chunk.name);
             }
         }
@@ -34,8 +35,7 @@ module.exports = {
                 exclude: /node_modules/
             },
             {
-                test: /\.scss$/,
-                exclude: /node_modules/,
+                test: /\.(css|sass|scss)$/,
                 use: [
                     {
                         loader: 'style-loader' // Creates style nodes from JS strings
@@ -83,6 +83,11 @@ module.exports = {
                 },
                 {
                     from: path.join(rootDir, 'src', 'components', 'options', 'options.html'),
+                    to: path.join(rootDir, 'dist'),
+                    force: true
+                },
+                {
+                    from: path.join(rootDir, 'src', 'components', 'popup', 'localVideoPlayer.html'),
                     to: path.join(rootDir, 'dist'),
                     force: true
                 }
