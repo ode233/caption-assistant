@@ -13,7 +13,7 @@ console.log('popup');
 const Popup = () => {
     const onClickPlayLocalVideo = () => {
         chrome.tabs.create({
-            url: 'localVideoPlayer.html'
+            url: 'watchVideo/local/localVideoPlayer.html'
         });
     };
 

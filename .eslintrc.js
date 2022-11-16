@@ -76,7 +76,9 @@ module.exports = {
                     'caiyun',
                     'zh',
                     'videojs',
-                    'vjs'
+                    'vjs',
+                    'srt',
+                    'autoplay'
                 ]
             }
         ]

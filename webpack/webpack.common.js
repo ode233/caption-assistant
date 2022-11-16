@@ -1,3 +1,4 @@
+/* eslint-disable spellcheck/spell-checker */
 /* eslint-disable @typescript-eslint/no-require-imports */
 const webpack = require('webpack');
 const path = require('path');
@@ -12,7 +13,10 @@ module.exports = {
         '/watchVideo/netflix/content': path.join(rootDir, 'src/components/content/watchVideo/netflix/content.tsx'),
         '/watchVideo/netflix/inject': path.join(rootDir, 'src/components/content/watchVideo/netflix/inject.ts'),
         '/translate/content': path.join(rootDir, 'src/components/content/translate/content.tsx'),
-        localVideoPlayer: path.join(rootDir, 'src/components/popup/localVideoPlayer.tsx')
+        '/watchVideo/local/localVideoPlayer': path.join(
+            rootDir,
+            'src/components/content/watchVideo/local/localVideoPlayer.tsx'
+        )
     },
     output: {
         path: path.join(rootDir, 'dist'),
@@ -22,7 +26,7 @@ module.exports = {
         splitChunks: {
             name: 'vendor',
             chunks(chunk) {
-                const notChunks = ['background', 'popup', 'options', 'localVideoPlayer'];
+                const notChunks = ['background'];
                 return !notChunks.includes(chunk.name);
             }
         }
@@ -51,9 +55,18 @@ module.exports = {
         ]
     },
     resolve: {
-        extensions: ['.ts', '.tsx', '.js']
+        extensions: ['.ts', '.tsx', '.js'],
+        fallback: { stream: require.resolve('stream-browserify'), buffer: require.resolve('buffer') }
     },
     plugins: [
+        // Work around for Buffer is undefined:
+        // https://github.com/webpack/changelog-v5/issues/10
+        new webpack.ProvidePlugin({
+            Buffer: ['buffer', 'Buffer']
+        }),
+        new webpack.ProvidePlugin({
+            process: 'process/browser'
+        }),
         new CopyPlugin({
             patterns: [
                 {
@@ -87,8 +100,16 @@ module.exports = {
                     force: true
                 },
                 {
-                    from: path.join(rootDir, 'src', 'components', 'popup', 'localVideoPlayer.html'),
-                    to: path.join(rootDir, 'dist'),
+                    from: path.join(
+                        rootDir,
+                        'src',
+                        'components',
+                        'content',
+                        'watchVideo',
+                        'local',
+                        'localVideoPlayer.html'
+                    ),
+                    to: path.join(rootDir, 'dist', 'watchVideo', 'local'),
                     force: true
                 }
             ]

@@ -21,11 +21,14 @@
         "@emotion/react": "^11.10.4",
         "@emotion/styled": "^11.10.4",
         "@mui/material": "^5.10.3",
+        "buffer": "^6.0.3",
         "get-selection-more": "^1.1.0",
         "react": "^17.0.1",
         "react-dom": "^17.0.1",
         "react-icons": "^4.4.0",
+        "stream-browserify": "^3.0.0",
         "styled-components": "^5.3.5",
+        "subtitle": "^4.2.1",
         "video.js": "^7.20.3"
     },
     "devDependencies": {
