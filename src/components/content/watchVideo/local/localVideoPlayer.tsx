@@ -6,9 +6,13 @@ import './localVideoPlayer.scss';
 import { css } from '@emotion/react';
 import { parse, NodeList, Node, parseSync } from 'subtitle';
 import { Readable } from 'stream';
+import { generateSubtitleNodeList } from './subtitle';
+import { Subtitle, SubtitleContainer, SUBTITLE_WRAPPER_ID } from '../../../../definition/watchVideoDefinition';
+import { LocalVideo } from './video';
 
 console.log('localVideoPlayer');
 
+const localVideoPlayerId = 'local-video-player';
 const videoInputId = 'video-input';
 const subtitleInputId = 'subtitle-input';
 
@@ -103,8 +107,9 @@ const LocalVideoPlayer = () => {
             return;
         }
         let file = event.target.files![0];
-        let fileURL = URL.createObjectURL(file);
+        document.title = file.name;
 
+        let fileURL = URL.createObjectURL(file);
         player.current.src({ src: fileURL, type: file.type });
     }
 
@@ -116,6 +121,21 @@ const LocalVideoPlayer = () => {
         let text = await file.text();
         let nodes = parseSync(text);
         console.log(nodes);
+
+        let subtitleNodeList = generateSubtitleNodeList(nodes);
+        let subtitle = new Subtitle(subtitleNodeList);
+        let localVideo = new LocalVideo(videoNode.current!, player.current);
+        let mountElement = document.getElementById(localVideoPlayerId);
+
+        let subtitleWrapper = document.getElementById(SUBTITLE_WRAPPER_ID);
+        if (subtitleWrapper) {
+            subtitleWrapper.remove();
+        }
+
+        ReactDOM.render(
+            <SubtitleContainer video={localVideo} subtitle={subtitle} mountElement={mountElement!}></SubtitleContainer>,
+            document.body.appendChild(document.createElement('div'))
+        );
     }
 
     return (
@@ -132,7 +152,7 @@ const LocalVideoPlayer = () => {
                 top: 0;
             `}
         >
-            <video ref={videoNode} className="video-js vjs-big-play-centered" />
+            <video ref={videoNode} className="video-js vjs-big-play-centered" id={localVideoPlayerId} />
             <input
                 type="file"
                 accept=".mp4"

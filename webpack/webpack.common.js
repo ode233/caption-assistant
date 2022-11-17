@@ -90,6 +90,11 @@ module.exports = {
                     force: true
                 },
                 {
+                    from: path.join(rootDir, 'src', 'assets', 'icons', 'icon.png'),
+                    to: path.join(rootDir, 'dist', 'favicon.ico'),
+                    force: true
+                },
+                {
                     from: path.join(rootDir, 'src', 'components', 'popup', 'popup.html'),
                     to: path.join(rootDir, 'dist'),
                     force: true

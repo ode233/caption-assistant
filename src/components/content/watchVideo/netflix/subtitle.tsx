@@ -1,8 +1,9 @@
 import { SubtitleNode, SUBTITLE_WRAPPER_ID } from '../../../../definition/watchVideoDefinition';
+import { createSubtitleElement } from '../../../../utils/subtitle';
 
 let subtitleNodeList: Array<SubtitleNode> = [];
 
-function getSubtitleNodeList(e: any) {
+function generateSubtitleNodeList(e: any) {
     let subtitleWrapper = document.getElementById(SUBTITLE_WRAPPER_ID);
     if (subtitleWrapper) {
         return;
@@ -22,19 +23,19 @@ function getSubtitleNodeList(e: any) {
         const begin = Number(beginString) / 10 ** 7;
         const endString = subtitleElement.getAttribute('end')?.replace('t', '');
         const end = Number(endString) / 10 ** 7;
-        let text = getText(subtitleElement);
+        let subtitleHTML = getSubtitleHTML(subtitleElement);
         if (begin === prevBegin) {
-            addText(prevSubtitleElement!, text);
+            addSubtitleHTML(prevSubtitleElement!, subtitleHTML);
             continue;
         }
-        subtitleElement = createSubtitleElement(text, subtitleNodeList.length);
+        subtitleElement = createSubtitleElement(subtitleHTML, subtitleNodeList.length);
         subtitleNodeList.push(new SubtitleNode(begin, end, subtitleElement));
         prevBegin = begin;
         prevSubtitleElement = subtitleElement;
     }
 }
 
-function getText(subtitleElement: HTMLParagraphElement) {
+function getSubtitleHTML(subtitleElement: HTMLParagraphElement) {
     let text = '';
     for (let node of subtitleElement.childNodes) {
         switch (node.nodeName) {
@@ -50,16 +51,8 @@ function getText(subtitleElement: HTMLParagraphElement) {
     return text;
 }
 
-function addText(subtitleElement: HTMLParagraphElement, text: string) {
+function addSubtitleHTML(subtitleElement: HTMLParagraphElement, text: string) {
     subtitleElement.innerHTML += '&#10;' + text;
 }
 
-function createSubtitleElement(text: string, index: number): HTMLParagraphElement {
-    let newSubtitleElement = document.createElement('p');
-    newSubtitleElement.setAttribute('index', index.toString());
-    newSubtitleElement.style.whiteSpace = 'pre-line';
-    newSubtitleElement.innerHTML = text;
-    return newSubtitleElement;
-}
-
-export { getSubtitleNodeList, subtitleNodeList };
+export { generateSubtitleNodeList, subtitleNodeList };

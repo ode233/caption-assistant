@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 import { Subtitle, SubtitleContainer, SUBTITLE_WRAPPER_ID } from '../../../../definition/watchVideoDefinition';
-import { getSubtitleNodeList, subtitleNodeList } from './subtitle';
+import { generateSubtitleNodeList, subtitleNodeList } from './subtitle';
 import { NetflixVideo } from './video';
 
 const WITHOUT_CONTROLLER_BOTTOM = '6%';
@@ -16,7 +16,7 @@ s.id = 'subtitle-assistant-script';
 s.src = chrome.runtime.getURL('watchVideo/netflix/inject.js');
 (document.head || document.documentElement).appendChild(s);
 
-window.addEventListener('getSubtitleNodeList', getSubtitleNodeList);
+window.addEventListener('generateSubtitleNodeList', generateSubtitleNodeList);
 
 const observerConfig = {
     attributes: false,

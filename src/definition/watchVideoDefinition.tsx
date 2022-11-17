@@ -21,7 +21,7 @@ const SubtitleWrapper = styled.div`
     right: 0;
     margin-left: auto;
     margin-right: auto;
-    bottom: '6%';
+    bottom: 6%;
 `;
 
 class SubtitleNode {
