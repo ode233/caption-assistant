@@ -10,7 +10,7 @@ import { NEXT, PREV, SUBTITLE_WRAPPER_ID } from '../constants/watchVideoConstant
 interface SubtitleContainerProps {
     video: Video;
     subtitle: Subtitle;
-    mountElement: Element;
+    mountElement: HTMLElement;
 }
 
 const SubtitleWrapper = styled.div`
@@ -282,6 +282,7 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
                     return true;
                 }
                 case 'playVideo': {
+                    mountElement.focus();
                     video.play();
                     return;
                 }

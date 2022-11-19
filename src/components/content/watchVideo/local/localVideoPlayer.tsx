@@ -4,8 +4,7 @@ import 'video.js/dist/video-js.css';
 import { ChangeEvent, useEffect, useRef } from 'react';
 import './localVideoPlayer.scss';
 import { css } from '@emotion/react';
-import { parse, NodeList, Node, parseSync } from 'subtitle';
-import { Readable } from 'stream';
+import { parseSync } from 'subtitle';
 import { generateSubtitleNodeList } from './subtitle';
 import { Subtitle, SubtitleContainer, SUBTITLE_WRAPPER_ID } from '../../../../definition/watchVideoDefinition';
 import { LocalVideo } from './video';
@@ -36,8 +35,10 @@ const initialOptions: videojs.PlayerOptions = {
         children: [
             'playToggle',
             'volumePanel',
+            'currentTimeDisplay',
+            'timeDivider',
+            'durationDisplay',
             'progressControl',
-            'remainingTimeDisplay',
             'selectVideo',
             'selectSubtitle',
             'fullscreenToggle',

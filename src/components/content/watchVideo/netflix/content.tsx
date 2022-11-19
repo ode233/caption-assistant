@@ -46,7 +46,7 @@ const documentObserver = new MutationObserver((mutations, observer) => {
     let originSubtitleElement = document.getElementsByClassName('player-timedtext')[0];
     originSubtitleElement.parentElement!.removeChild(originSubtitleElement);
     document.body.style.userSelect = 'text';
-    let mountElement = document.getElementsByClassName('watch-video--player-view')[0];
+    let mountElement = document.getElementsByClassName('watch-video--player-view')[0] as HTMLElement;
 
     let subtitle = new Subtitle(subtitleNodeList);
 

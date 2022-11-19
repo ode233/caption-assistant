@@ -22,6 +22,20 @@
     display: flex;
 }
 
+.video-js .vjs-current-time {
+    display: block;
+}
+
+.video-js .vjs-time-divider {
+    display: block;
+    padding: 0;
+    min-width: 0;
+}
+
+.video-js .vjs-duration {
+    display: block;
+}
+
 body {
     background-color: black;
 }
