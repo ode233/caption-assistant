@@ -67,7 +67,7 @@ const frontHTML = `
 
 <section class="source">
 <hr />
-<img src="{{PageIcon}}" />
+{{PageIcon}}
 <a href="{{PageUrl}}">{{PageTitle}}</a>
 </section>
 
@@ -95,7 +95,7 @@ const backHTML = `
 
 <section class="source">
 <hr />
-<img src="{{PageIcon}}" />
+{{PageIcon}}
 <a href="{{PageUrl}}">{{PageTitle}}</a>
 </section>
 
@@ -221,6 +221,21 @@ export const createModel = async () => {
     return response.json();
 };
 
+export const retrieveMediaFile = async (filename: string) => {
+    const response = await fetch(ankiBaseUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'retrieveMediaFile',
+            version: 6,
+            params: { filename: filename }
+        })
+    });
+    return response.json();
+};
+
 export const addNote = async (popupProps: PopupProps) => {
     let timestamp = Date.now().toString();
     let sentenceCloze = popupProps.sentence.replaceAll(popupProps.text, `{{c1::${popupProps.text}}}`);
@@ -244,12 +259,33 @@ export const addNote = async (popupProps: PopupProps) => {
             fields: ['SentenceVoice']
         };
     }
-    let imgData = popupProps.imgDataUrl.split(',')[1];
-    let img = {
-        data: imgData,
-        filename: `${timestamp}_img.jpeg`,
-        fields: ['Img']
-    };
+
+    let img;
+    let imgDataUrl = popupProps.imgDataUrl;
+    if (imgDataUrl) {
+        let imgData = imgDataUrl.split(',')[1];
+        img = {
+            data: imgData,
+            filename: `${timestamp}_img.jpeg`,
+            fields: ['Img']
+        };
+    }
+
+    let pageIcon;
+    let pageIconUrl = popupProps.pageIconUrl;
+    let pageIconName = getPageIconName(pageIconUrl);
+    let isExist = (await retrieveMediaFile(pageIconName)).result;
+    if (!isExist) {
+        if (pageIconName === 'localVideoPlayer.ico') {
+            pageIconUrl =
+                'https://raw.githubusercontent.com/ode233/learning-words-from-context/main/src/assets/icons/icon.png';
+        }
+        pageIcon = {
+            url: pageIconUrl,
+            filename: pageIconName,
+            fields: ['PageIcon']
+        };
+    }
 
     const response = await fetch(ankiBaseUrl, {
         method: 'POST',
@@ -270,14 +306,14 @@ export const addNote = async (popupProps: PopupProps) => {
                         Sentence: popupProps.sentence,
                         SentenceTranslate: popupProps.sentenceTranslate,
                         Remark: popupProps.remark,
-                        PageIcon: popupProps.pageIconUrl,
+                        PageIcon: pageIcon ? '' : `<img src="${pageIconName}">`,
                         PageTitle: popupProps.pageTitle,
                         PageUrl: popupProps.pageUrl,
                         SentenceCloze: sentenceCloze,
                         Timestamp: timestamp
                     },
                     audio: [textVoice, sentenceVoice],
-                    picture: [img],
+                    picture: [img, pageIcon],
                     options: {
                         allowDuplicate: false,
                         duplicateScope: 'deck'
@@ -288,3 +324,17 @@ export const addNote = async (popupProps: PopupProps) => {
     });
     return response.json();
 };
+
+function getPageIconName(pageIconUrl: string): string {
+    let pageIconName;
+    if (pageIconUrl.includes('chrome-extension://')) {
+        pageIconName = 'localVideoPlayer.ico';
+    } else {
+        pageIconName = pageIconUrl.replaceAll('/favicon.ico', '');
+        pageIconName = pageIconName.replaceAll('https://', '');
+        pageIconName = pageIconName.replaceAll('http://', '');
+        pageIconName = pageIconName.replaceAll('.', '-');
+        pageIconName = pageIconName + '.ico';
+    }
+    return pageIconName;
+}

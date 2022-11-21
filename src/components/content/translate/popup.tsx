@@ -75,6 +75,7 @@ const Popup = () => {
     const [popupProps, setPopupProps] = useState(new PopupProps());
 
     const popupPropsRef = useRef(popupProps);
+    const isWatchVideoRef = useRef(false);
 
     useEffect(() => {
         popupPropsRef.current = popupProps;
@@ -192,14 +193,13 @@ const Popup = () => {
         popupProps.isLoadingAnki = true;
         popupProps.dictDisplay = 'none';
         setPopupProps({ ...popupProps });
-        let isWatchVideo = false;
         for (let watchUrl of WATCH_URL_LIST) {
             if (popupProps.pageUrl.match(watchUrl)) {
-                isWatchVideo = true;
+                isWatchVideoRef.current = true;
                 break;
             }
         }
-        if (isWatchVideo) {
+        if (isWatchVideoRef.current) {
             chrome.runtime.sendMessage({ queryBackground: 'getContextFromVideo' }, (data: ContextFromVideo) => {
                 if (!data.imgDataUrl) {
                     alert('getContextFromVideo err');
@@ -222,8 +222,10 @@ const Popup = () => {
         popupProps.isLoadingAnki = false;
         popupProps.ankiOpen = false;
         setPopupProps({ ...popupProps });
-        await delay(100);
-        chrome.runtime.sendMessage({ queryBackground: 'playVideo' });
+        if (isWatchVideoRef.current) {
+            await delay(100);
+            chrome.runtime.sendMessage({ queryBackground: 'playVideo' });
+        }
     };
 
     const onClickExportAnki = async () => {
@@ -235,8 +237,10 @@ const Popup = () => {
             popupProps.isLoadingAnki = false;
             popupProps.ankiOpen = false;
             setPopupProps({ ...popupProps });
-            await delay(100);
-            chrome.runtime.sendMessage({ queryBackground: 'playVideo' });
+            if (isWatchVideoRef.current) {
+                await delay(100);
+                chrome.runtime.sendMessage({ queryBackground: 'playVideo' });
+            }
         });
     };
 
