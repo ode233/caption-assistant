@@ -24,6 +24,9 @@ const SubtitleWrapper = styled.div`
     bottom: 6%;
 `;
 
+//
+let stream: MediaStream;
+
 class SubtitleNode {
     // second
     public begin: number;
@@ -111,7 +114,6 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
     const [display, setDisplay] = useState('block');
 
     const subtitleElementStringRef = useRef(subtitleElementString);
-    const streamRef = useRef(new MediaStream());
     const displayRef = useRef(display);
 
     subtitleElementStringRef.current = subtitleElementString;
@@ -201,8 +203,11 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
             sendResponse(contextFromVideo);
         }
 
+        /**
+         *
+         * @returns stream only audio
+         */
         async function getStream() {
-            let stream = streamRef.current;
             if (stream && stream.getAudioTracks().length > 0) {
                 return stream;
             }
@@ -223,7 +228,6 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
                 track.stop();
                 stream.removeTrack(track);
             }
-            streamRef.current = stream;
             return stream;
         }
 
