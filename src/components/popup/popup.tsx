@@ -26,12 +26,14 @@ const Popup = () => {
             <List>
                 <ListItem disablePadding>
                     <ListItemButton onClick={onClickPlayLocalVideo}>
-                        <ListItemIcon>
-                            <AiFillPlayCircle
-                                css={css`
-                                    font-size: x-large;
-                                `}
-                            />
+                        <ListItemIcon
+                            css={css`
+                                font-size: x-large;
+                                min-width: 0;
+                                margin-right: 1rem;
+                            `}
+                        >
+                            <AiFillPlayCircle />
                         </ListItemIcon>
                         <ListItemText primary="Play local video" />
                     </ListItemButton>
