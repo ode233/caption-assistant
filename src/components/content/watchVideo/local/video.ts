@@ -1,11 +1,12 @@
 import { Video } from '../../../../definition/watchVideoDefinition';
 import videojs from 'video.js';
 
-class LocalVideo implements Video {
+class LocalVideo extends Video {
     private video: HTMLVideoElement;
     private player: videojs.Player;
 
     public constructor(video: HTMLVideoElement, player: videojs.Player) {
+        super();
         this.video = video;
         this.player = player;
     }

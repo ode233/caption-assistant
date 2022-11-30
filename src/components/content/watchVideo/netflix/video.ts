@@ -1,9 +1,10 @@
 import { Video } from '../../../../definition/watchVideoDefinition';
 
-class NetflixVideo implements Video {
+class NetflixVideo extends Video {
     private video: HTMLVideoElement;
 
     public constructor(video: HTMLVideoElement) {
+        super();
         this.video = video;
     }
 

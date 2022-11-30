@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import { delay } from '../utils/utils';
 import { ContextFromVideo } from '../components/content/translate/popup';
-import { NEXT, PREV, SUBTITLE_WRAPPER_ID } from '../constants/watchVideoConstants';
+import { KEY, SUBTITLE_WRAPPER_ID } from '../constants/watchVideoConstants';
 
 interface SubtitleContainerProps {
     video: Video;
@@ -100,13 +100,20 @@ class Subtitle {
     }
 }
 
-interface Video {
+abstract class Video {
     // all time unit is second
-    seek: (time: number) => void;
-    play: () => void;
-    pause: () => void;
-    getCurrentTime: () => number;
-    setOntimeupdate: (f: any) => void;
+    public seekAndPlay(time: number | null) {
+        if (!time) {
+            return;
+        }
+        this.seek(time);
+        this.play();
+    }
+    public abstract seek(time: number): void;
+    public abstract play(): void;
+    public abstract pause(): void;
+    public abstract getCurrentTime(): number;
+    public abstract setOntimeupdate(f: any): void;
 }
 
 function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerProps) {
@@ -155,27 +162,13 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
 
         mountElement.addEventListener('keydown', (event) => {
             let keyEvent = event as KeyboardEvent;
-            switch (keyEvent.key.toLowerCase()) {
-                case PREV: {
-                    const time = subtitle.getPrevSubtitleTime();
-                    if (!time) {
-                        break;
-                    }
-                    video.seek(time);
-                    video.play();
-                    break;
-                }
-                case NEXT: {
-                    const time = subtitle.getNextSubtitleTime();
-                    if (!time) {
-                        break;
-                    }
-                    video.seek(time);
-                    video.play();
-                    break;
-                }
-                default:
-                    break;
+            let key = keyEvent.key;
+            if (key === 'a' || key === 'A' || key === 'ArrowLeft') {
+                const time = subtitle.getPrevSubtitleTime();
+                video.seekAndPlay(time);
+            } else if (key === 'd' || key === 'D' || key === 'ArrowRight') {
+                const time = subtitle.getNextSubtitleTime();
+                video.seekAndPlay(time);
             }
         });
 
