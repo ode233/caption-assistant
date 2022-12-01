@@ -160,7 +160,7 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
             setSubtitleElementString(nowSubtitleElementString);
         });
 
-        mountElement.addEventListener('keydown', (event) => {
+        document.addEventListener('keydown', (event) => {
             let keyEvent = event as KeyboardEvent;
             let key = keyEvent.key;
             if (key === 'a' || key === 'A' || key === 'ArrowLeft') {

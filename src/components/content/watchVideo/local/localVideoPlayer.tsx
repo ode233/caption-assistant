@@ -15,38 +15,6 @@ const localVideoPlayerId = 'local-video-player';
 const videoInputId = 'video-input';
 const subtitleInputId = 'subtitle-input';
 
-const videoJsOptions = {
-    // sources: [
-    //     {
-    //         src: 'https://vjs.zencdn.net/v/oceans.mp4',
-    //         type: 'video/mp4'
-    //     }
-    // ]
-};
-
-const initialOptions: videojs.PlayerOptions = {
-    autoplay: true,
-    controls: true,
-    fill: true,
-    controlBar: {
-        volumePanel: {
-            inline: false
-        },
-        children: [
-            'playToggle',
-            'volumePanel',
-            'currentTimeDisplay',
-            'timeDivider',
-            'durationDisplay',
-            'progressControl',
-            'selectVideo',
-            'selectSubtitle',
-            'fullscreenToggle',
-            'subsCapsButton'
-        ]
-    }
-};
-
 let VideoJsButton = videojs.getComponent('Button');
 
 class SelectVideo extends VideoJsButton {
@@ -81,6 +49,26 @@ class SelectSubtitle extends VideoJsButton {
     }
 }
 
+class F11fullscreenToggle extends VideoJsButton {
+    public constructor(player: videojs.Player, options = {}) {
+        super(player, options);
+        this.setup();
+    }
+
+    public setup() {
+        this.addClass('vjs-f11-full-screen-toggle');
+        this.controlText('Full screen');
+    }
+
+    public handleClick() {
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else {
+            document.documentElement.requestFullscreen();
+        }
+    }
+}
+
 const LocalVideoPlayer = () => {
     const videoNode = useRef<HTMLVideoElement>(null);
     const player = useRef<videojs.Player>();
@@ -88,10 +76,41 @@ const LocalVideoPlayer = () => {
     useEffect(() => {
         videojs.registerComponent('selectVideo', SelectVideo);
         videojs.registerComponent('selectSubtitle', SelectSubtitle);
+        videojs.registerComponent('f11fullscreenToggle', F11fullscreenToggle);
+
+        const initialOptions: videojs.PlayerOptions = {
+            // sources: [
+            //     {
+            //         src: 'https://vjs.zencdn.net/v/oceans.mp4',
+            //         type: 'video/mp4'
+            //     }
+            // ],
+            autoplay: true,
+            controls: true,
+            fill: true,
+            controlBar: {
+                volumePanel: {
+                    inline: false
+                },
+                children: [
+                    'playToggle',
+                    'volumePanel',
+                    'currentTimeDisplay',
+                    'timeDivider',
+                    'durationDisplay',
+                    'progressControl',
+                    'selectVideo',
+                    'selectSubtitle',
+                    'f11fullscreenToggle'
+                ]
+            },
+            userActions: {
+                doubleClick: doubleClickHandler
+            }
+        };
 
         player.current = videojs(videoNode.current!, {
-            ...initialOptions,
-            ...videoJsOptions
+            ...initialOptions
         });
 
         player.current.controls(true);
@@ -102,6 +121,19 @@ const LocalVideoPlayer = () => {
             }
         };
     });
+
+    function doubleClickHandler(event: Event) {
+        let mouseEvent = event as MouseEvent;
+        let center = player.current!.currentWidth() / 2;
+        let offset = 100;
+        if (mouseEvent.offsetX > center + offset) {
+            let keyBoardEvent = new KeyboardEvent('keydown', { key: 'd' });
+            document.dispatchEvent(keyBoardEvent);
+        } else if (mouseEvent.offsetX < center - offset) {
+            let keyBoardEvent = new KeyboardEvent('keydown', { key: 'a' });
+            document.dispatchEvent(keyBoardEvent);
+        }
+    }
 
     function videoInputOnChange(event: ChangeEvent<HTMLInputElement>) {
         if (!player.current) {
