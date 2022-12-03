@@ -105,7 +105,7 @@ const LocalVideoPlayer = () => {
                 ]
             },
             userActions: {
-                doubleClick: doubleClickHandler
+                doubleClick: false
             }
         };
 
@@ -121,19 +121,6 @@ const LocalVideoPlayer = () => {
             }
         };
     });
-
-    function doubleClickHandler(event: Event) {
-        let mouseEvent = event as MouseEvent;
-        let center = player.current!.currentWidth() / 2;
-        let offset = 100;
-        if (mouseEvent.offsetX > center + offset) {
-            let keyBoardEvent = new KeyboardEvent('keydown', { key: 'd' });
-            document.dispatchEvent(keyBoardEvent);
-        } else if (mouseEvent.offsetX < center - offset) {
-            let keyBoardEvent = new KeyboardEvent('keydown', { key: 'a' });
-            document.dispatchEvent(keyBoardEvent);
-        }
-    }
 
     function videoInputOnChange(event: ChangeEvent<HTMLInputElement>) {
         if (!player.current) {

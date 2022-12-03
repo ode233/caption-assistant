@@ -1,11 +1,10 @@
 import { css } from '@emotion/react';
 import { useEffect, useRef } from 'react';
-import { useState } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import { delay } from '../utils/utils';
 import { ContextFromVideo } from '../components/content/translate/popup';
-import { KEY, SUBTITLE_WRAPPER_ID } from '../constants/watchVideoConstants';
+import { SUBTITLE_WRAPPER_ID } from '../constants/watchVideoConstants';
 
 interface SubtitleContainerProps {
     video: Video;
@@ -40,17 +39,37 @@ class SubtitleNode {
     }
 }
 
+const BEFORE_SUBTITLE_BEGIN_INDEX = -1;
+const AFTER_SUBTITLE_END_INDEX = -2;
+const NOT_MATCH_SUBTITLE_INDEX = -3;
+
+class SubtitleIndexMatchResult {
+    public isMatch: boolean;
+    // represents the previous index if not match
+    public index: number;
+
+    public constructor(isMatch: boolean, index: number) {
+        this.isMatch = isMatch;
+        this.index = index;
+    }
+}
+
 class Subtitle {
     public subtitleNodeList: Array<SubtitleNode> = [];
 
-    public nowSubtitleElementString = '';
-    public nowSubTitleIndex = -1;
+    public nowSubTitleIndex = NOT_MATCH_SUBTITLE_INDEX;
+    public prevSubTitleIndex = NOT_MATCH_SUBTITLE_INDEX;
+
+    public subtitleBeginTime = 0;
+    public subtitleEndTime = 0;
 
     public constructor(subtitleNodeList: Array<SubtitleNode>) {
         this.subtitleNodeList = subtitleNodeList;
+        this.subtitleBeginTime = subtitleNodeList[0].begin;
+        this.subtitleEndTime = subtitleNodeList[subtitleNodeList.length - 1].end;
     }
 
-    public getSubtitleByTime(time: number) {
+    public getSubtitleIndexByTime(time: number) {
         return this.binarySearch(0, this.subtitleNodeList.length - 1, time);
     }
 
@@ -62,36 +81,53 @@ class Subtitle {
     }
 
     public getNextSubtitleTime(): number | null {
-        let nextIndex = this.nowSubTitleIndex + 1;
-        if (nextIndex >= this.subtitleNodeList.length) {
-            return null;
+        switch (this.nowSubTitleIndex) {
+            case BEFORE_SUBTITLE_BEGIN_INDEX: {
+                return this.subtitleNodeList[0].begin;
+            }
+            case AFTER_SUBTITLE_END_INDEX: {
+                return null;
+            }
+            case NOT_MATCH_SUBTITLE_INDEX: {
+                return this.subtitleNodeList[this.prevSubTitleIndex + 1].begin;
+            }
+            case this.subtitleNodeList.length - 1: {
+                return null;
+            }
+            default: {
+                return this.subtitleNodeList[this.nowSubTitleIndex + 1].begin;
+            }
         }
-        let subtitle = this.subtitleNodeList[nextIndex];
-        return subtitle.begin;
     }
 
     public getPrevSubtitleTime(): number | null {
-        let prevIndex = this.nowSubtitleElementString ? this.nowSubTitleIndex - 1 : this.nowSubTitleIndex;
-        if (prevIndex < 0) {
-            return null;
-        }
-        let subtitle = this.subtitleNodeList[prevIndex];
-        return subtitle.begin;
-    }
-
-    private binarySearch(i: number, j: number, target: number): SubtitleNode | null {
-        if (i > j) {
-            let prevIdx = i - 1;
-            if (prevIdx < 0) {
+        switch (this.nowSubTitleIndex) {
+            case BEFORE_SUBTITLE_BEGIN_INDEX: {
                 return null;
             }
-            let prevSubtitle = this.subtitleNodeList[prevIdx];
-            return prevSubtitle;
+            case AFTER_SUBTITLE_END_INDEX: {
+                return this.subtitleNodeList[this.subtitleNodeList.length - 1].begin;
+            }
+            case NOT_MATCH_SUBTITLE_INDEX: {
+                return this.subtitleNodeList[this.prevSubTitleIndex].begin;
+            }
+            case 0: {
+                return null;
+            }
+            default: {
+                return this.subtitleNodeList[this.nowSubTitleIndex - 1].begin;
+            }
+        }
+    }
+
+    private binarySearch(i: number, j: number, target: number): SubtitleIndexMatchResult {
+        if (i > j) {
+            return new SubtitleIndexMatchResult(true, j);
         }
         let mid = Math.floor(i + (j - i) / 2);
         let subtitle = this.subtitleNodeList[mid];
-        if (target >= subtitle.begin && target < subtitle.end) {
-            return subtitle;
+        if (target >= subtitle.begin && target <= subtitle.end) {
+            return new SubtitleIndexMatchResult(true, mid);
         } else if (target < subtitle.begin) {
             return this.binarySearch(i, mid - 1, target);
         } else {
@@ -117,60 +153,108 @@ abstract class Video {
 }
 
 function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerProps) {
-    const [subtitleElementString, setSubtitleElementString] = useState('');
-    const [display, setDisplay] = useState('block');
-
-    const subtitleElementStringRef = useRef(subtitleElementString);
-    const displayRef = useRef(display);
-
-    subtitleElementStringRef.current = subtitleElementString;
-    displayRef.current = display;
+    const subtitleWrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         video.setOntimeupdate(() => {
-            if (displayRef.current === 'none') {
+            if (subtitleWrapperRef.current?.style.display === 'none') {
                 return;
             }
-
-            const currentTime = video.getCurrentTime();
-            let subtitleNode = subtitle.getSubtitleByTime(currentTime);
-
-            let nowSubTitleIndex;
-            let nowSubtitleElementString;
-
-            if (subtitleNode === null) {
-                nowSubTitleIndex = -1;
-                nowSubtitleElementString = '';
-            } else if (currentTime > subtitleNode.end) {
-                nowSubTitleIndex = parseInt(subtitleNode.element.getAttribute('index')!, 10);
-                nowSubtitleElementString = '';
-            } else {
-                nowSubTitleIndex = parseInt(subtitleNode.element.getAttribute('index')!, 10);
-                nowSubtitleElementString = subtitleNode.element.outerHTML;
-            }
-
-            if (
-                subtitle.nowSubTitleIndex === nowSubTitleIndex &&
-                subtitle.nowSubtitleElementString === nowSubtitleElementString
-            ) {
-                return;
-            }
-            subtitle.nowSubTitleIndex = nowSubTitleIndex;
-            subtitle.nowSubtitleElementString = nowSubtitleElementString;
-            setSubtitleElementString(nowSubtitleElementString);
+            updateSubtitle();
         });
+
+        function updateSubtitle() {
+            const currentTime = video.getCurrentTime();
+            let nowSubTitleIndex;
+            let nowSubtitleElementString = '';
+            if (currentTime < subtitle.subtitleBeginTime) {
+                nowSubTitleIndex = BEFORE_SUBTITLE_BEGIN_INDEX;
+            } else if (currentTime > subtitle.subtitleEndTime) {
+                nowSubTitleIndex = AFTER_SUBTITLE_END_INDEX;
+            } else {
+                let subtitleIndexMatchResult = subtitle.getSubtitleIndexByTime(currentTime);
+                if (subtitleIndexMatchResult.isMatch) {
+                    nowSubTitleIndex = subtitleIndexMatchResult.index;
+                    nowSubtitleElementString = subtitle.subtitleNodeList[nowSubTitleIndex].element.outerHTML;
+                } else {
+                    nowSubTitleIndex = NOT_MATCH_SUBTITLE_INDEX;
+                    subtitle.prevSubTitleIndex = subtitleIndexMatchResult.index;
+                }
+            }
+
+            subtitle.nowSubTitleIndex = nowSubTitleIndex;
+            subtitleWrapperRef.current!.innerHTML = nowSubtitleElementString;
+        }
+
+        mountElement.ondblclick = (event) => {
+            let mouseEvent = event;
+            let center = mountElement.offsetWidth / 2;
+            let offset = 200;
+            if (mouseEvent.offsetX < center - offset) {
+                setTimeout(() => {
+                    playPrev();
+                }, 10);
+            } else if (mouseEvent.offsetX > center + offset) {
+                setTimeout(() => {
+                    playNext();
+                }, 10);
+            } else {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    document.documentElement.requestFullscreen();
+                }
+            }
+        };
+
+        let startX = 0;
+        let mousedown = false;
+        let dragged = false;
+        mountElement.onmousedown = (event: MouseEvent) => {
+            startX = event.offsetX;
+            mousedown = true;
+        };
+        mountElement.onmousemove = (event: MouseEvent) => {
+            if (mousedown) {
+                dragged = true;
+            }
+        };
+        mountElement.onmouseup = (event: MouseEvent) => {
+            let offset = 10;
+            if (dragged) {
+                if (event.offsetX < startX - offset) {
+                    setTimeout(() => {
+                        playPrev();
+                    }, 10);
+                } else if (event.offsetX > startX + offset) {
+                    setTimeout(() => {
+                        playNext();
+                    }, 10);
+                }
+            }
+            mousedown = false;
+            dragged = false;
+        };
 
         document.addEventListener('keydown', (event) => {
             let keyEvent = event as KeyboardEvent;
             let key = keyEvent.key;
             if (key === 'a' || key === 'A' || key === 'ArrowLeft') {
-                const time = subtitle.getPrevSubtitleTime();
-                video.seekAndPlay(time);
+                playPrev();
             } else if (key === 'd' || key === 'D' || key === 'ArrowRight') {
-                const time = subtitle.getNextSubtitleTime();
-                video.seekAndPlay(time);
+                playNext();
             }
         });
+
+        function playNext() {
+            const time = subtitle.getNextSubtitleTime();
+            video.seekAndPlay(time);
+        }
+
+        function playPrev() {
+            const time = subtitle.getPrevSubtitleTime();
+            video.seekAndPlay(time);
+        }
 
         async function getContextFromVideo(sendResponse: Function) {
             let contextFromVideo: ContextFromVideo = {
@@ -187,11 +271,11 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
                 sendResponse(contextFromVideo);
                 return;
             }
-            setDisplay('none');
+            subtitleWrapperRef.current!.style.display = 'none';
             video.pause();
             contextFromVideo.imgDataUrl = await captureVisibleTab(nowSubtitleNode);
             contextFromVideo.videoSentenceVoiceDataUrl = await captureAudio(nowSubtitleNode, stream);
-            setDisplay('block');
+            subtitleWrapperRef.current!.style.display = 'block';
             video.pause();
             sendResponse(contextFromVideo);
         }
@@ -289,13 +373,13 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
 
     return ReactDOM.createPortal(
         <SubtitleWrapper
+            ref={subtitleWrapperRef}
             css={css`
-                display: ${display};
+                display: 'block';
             `}
             onClick={(e: any) => {
                 video.pause();
             }}
-            dangerouslySetInnerHTML={{ __html: subtitleElementString }}
             id={SUBTITLE_WRAPPER_ID}
         ></SubtitleWrapper>,
         mountElement
