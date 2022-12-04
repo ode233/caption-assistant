@@ -122,7 +122,7 @@ class Subtitle {
 
     private binarySearch(i: number, j: number, target: number): SubtitleIndexMatchResult {
         if (i > j) {
-            return new SubtitleIndexMatchResult(true, j);
+            return new SubtitleIndexMatchResult(false, j);
         }
         let mid = Math.floor(i + (j - i) / 2);
         let subtitle = this.subtitleNodeList[mid];
