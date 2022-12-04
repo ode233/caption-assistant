@@ -1,5 +1,5 @@
 import { css } from '@emotion/react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import { delay } from '../utils/utils';
@@ -156,6 +156,10 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
     const subtitleWrapperRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        subtitleWrapperRef.current!.ondblclick = (event) => {
+            event.stopImmediatePropagation();
+        };
+
         video.setOntimeupdate(() => {
             if (subtitleWrapperRef.current?.style.display === 'none') {
                 return;
