@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { delay } from '../utils/utils';
 import { ContextFromVideo } from '../components/content/translate/popup';
 import { SUBTITLE_WRAPPER_ID } from '../constants/watchVideoConstants';
+import { getText } from 'get-selection-more';
 
 interface SubtitleContainerProps {
     video: Video;
@@ -157,7 +158,7 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
 
     useEffect(() => {
         subtitleWrapperRef.current!.ondblclick = (event) => {
-            event.stopImmediatePropagation();
+            event.stopPropagation();
         };
 
         video.setOntimeupdate(() => {
@@ -187,7 +188,9 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
             }
 
             subtitle.nowSubTitleIndex = nowSubTitleIndex;
-            subtitleWrapperRef.current!.innerHTML = nowSubtitleElementString;
+            if (subtitleWrapperRef.current!.innerHTML !== nowSubtitleElementString) {
+                subtitleWrapperRef.current!.innerHTML = nowSubtitleElementString;
+            }
         }
 
         mountElement.ondblclick = (event) => {
@@ -224,8 +227,8 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
             }
         };
         mountElement.onmouseup = (event: MouseEvent) => {
-            let offset = 10;
-            if (dragged) {
+            if (dragged && !getText()) {
+                let offset = 10;
                 if (event.offsetX < startX - offset) {
                     setTimeout(() => {
                         playPrev();
