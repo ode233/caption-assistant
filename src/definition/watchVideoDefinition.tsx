@@ -155,6 +155,8 @@ abstract class Video {
 
 function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerProps) {
     const subtitleWrapperRef = useRef<HTMLDivElement>(null);
+    const subtitleRef = useRef<Subtitle>(subtitle);
+    subtitleRef.current = subtitle;
 
     useEffect(() => {
         subtitleWrapperRef.current!.ondblclick = (event) => {
@@ -169,6 +171,7 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
         });
 
         function updateSubtitle() {
+            let subtitle = subtitleRef.current;
             const currentTime = video.getCurrentTime();
             let nowSubTitleIndex;
             let nowSubtitleElementString = '';
@@ -254,12 +257,12 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
         });
 
         function playNext() {
-            const time = subtitle.getNextSubtitleTime();
+            const time = subtitleRef.current.getNextSubtitleTime();
             video.seekAndPlay(time);
         }
 
         function playPrev() {
-            const time = subtitle.getPrevSubtitleTime();
+            const time = subtitleRef.current.getPrevSubtitleTime();
             video.seekAndPlay(time);
         }
 
@@ -268,7 +271,7 @@ function SubtitleContainer({ video, subtitle, mountElement }: SubtitleContainerP
                 videoSentenceVoiceDataUrl: '',
                 imgDataUrl: ''
             };
-            let nowSubtitleNode = subtitle.getNowSubtitleNode();
+            let nowSubtitleNode = subtitleRef.current.getNowSubtitleNode();
             if (!nowSubtitleNode) {
                 sendResponse(contextFromVideo);
                 return;
