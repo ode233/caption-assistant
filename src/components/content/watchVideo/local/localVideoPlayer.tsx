@@ -120,7 +120,7 @@ const LocalVideoPlayer = () => {
                 player.current.dispose();
             }
         };
-    });
+    }, []);
 
     function videoInputOnChange(event: ChangeEvent<HTMLInputElement>) {
         if (!player.current) {
