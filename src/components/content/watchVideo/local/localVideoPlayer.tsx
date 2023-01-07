@@ -71,6 +71,7 @@ class F11fullscreenToggle extends VideoJsButton {
 
 const LocalVideoPlayer = () => {
     const videoNode = useRef<HTMLVideoElement>(null);
+    const subtitleRenderContainer = useRef<HTMLDivElement>(null);
     const player = useRef<videojs.Player>();
 
     useEffect(() => {
@@ -147,14 +148,9 @@ const LocalVideoPlayer = () => {
         let localVideo = new LocalVideo(videoNode.current!, player.current);
         let mountElement = document.getElementById(localVideoPlayerId);
 
-        let subtitleWrapper = document.getElementById(SUBTITLE_WRAPPER_ID);
-        if (subtitleWrapper) {
-            subtitleWrapper.remove();
-        }
-
         ReactDOM.render(
             <SubtitleContainer video={localVideo} subtitle={subtitle} mountElement={mountElement!}></SubtitleContainer>,
-            document.body.appendChild(document.createElement('div'))
+            subtitleRenderContainer.current
         );
     }
 
@@ -191,6 +187,7 @@ const LocalVideoPlayer = () => {
                 `}
                 onChange={subtitleInputOnChange}
             />
+            <div ref={subtitleRenderContainer}></div>
         </div>
     );
 };
