@@ -17,14 +17,10 @@ export const ANKI_CARD_FRONT_HTML = `
 <section>
 
 <section>
-{{TextTranslate}} {{TextVoice}} {{TextPhonetic}}
+<div>{{TextTranslate}} {{TextVoice}} {{TextPhonetic}}</div>
+<div>{{SentenceTranslate}} {{SentenceVoice}}</div>
+<div>{{type:cloze:SentenceCloze}}</div>
 </section>
-
-<section>
-{{SentenceTranslate}} {{SentenceVoice}}
-</section>
-
-<section>{{type:cloze:SentenceCloze}}</section>
 `;
 
 export const ANKI_CARD_BACK_HTML = `
@@ -45,11 +41,8 @@ export const ANKI_CARD_BACK_HTML = `
 <section>
 
 <section>
-{{TextTranslate}} {{TextVoice}} {{TextPhonetic}}
-</section>
-
-<section>
-{{SentenceTranslate}} {{SentenceVoice}}
+<div>{{TextTranslate}} {{TextVoice}} {{TextPhonetic}}</div>
+<div>{{SentenceTranslate}} {{SentenceVoice}}</div>
 </section>
 `;
 
