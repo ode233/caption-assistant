@@ -116,6 +116,16 @@ module.exports = {
                     ),
                     to: path.join(rootDir, 'dist', 'watchVideo', 'local'),
                     force: true
+                },
+                {
+                    from: path.join(rootDir, 'src', 'components', 'background', 'offscreen.html'),
+                    to: path.join(rootDir, 'dist'),
+                    force: true
+                },
+                {
+                    from: path.join(rootDir, 'src', 'components', 'background', 'offscreen.js'),
+                    to: path.join(rootDir, 'dist'),
+                    force: true
                 }
             ]
         })

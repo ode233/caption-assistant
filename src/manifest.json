@@ -23,6 +23,6 @@
     "background": {
         "service_worker": "background.js"
     },
-    "permissions": ["storage", "tabs", "scripting", "tabCapture", "desktopCapture"],
+    "permissions": ["storage", "tabs", "scripting", "tabCapture", "desktopCapture", "offscreen"],
     "host_permissions": ["<all_urls>"]
 }

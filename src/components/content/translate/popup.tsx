@@ -315,8 +315,10 @@ const Popup = () => {
                                 <BsVolumeUpFill
                                     style={{ fontSize: 'larger', verticalAlign: 'bottom' }}
                                     onClick={() => {
-                                        let audio = new Audio(popupProps.textVoiceUrl);
-                                        audio.play();
+                                        chrome.runtime.sendMessage({
+                                            queryBackground: 'playAudio',
+                                            voiceUrl: popupProps.textVoiceUrl
+                                        });
                                     }}
                                 />
                             </Text>
@@ -329,8 +331,10 @@ const Popup = () => {
                                 <BsVolumeUpFill
                                     style={{ fontSize: 'larger', verticalAlign: 'text-bottom' }}
                                     onClick={() => {
-                                        let audio = new Audio(popupProps.sentenceVoiceUrl);
-                                        audio.play();
+                                        chrome.runtime.sendMessage({
+                                            queryBackground: 'playAudio',
+                                            voiceUrl: popupProps.sentenceVoiceUrl
+                                        });
                                     }}
                                 />
                             </Text>
@@ -367,8 +371,10 @@ const Popup = () => {
                                     <InputAdornment position="start">
                                         <BsVolumeUpFill
                                             onClick={() => {
-                                                let audio = new Audio(popupProps.textVoiceUrl);
-                                                audio.play();
+                                                chrome.runtime.sendMessage({
+                                                    queryBackground: 'playAudio',
+                                                    voiceUrl: popupProps.textVoiceUrl
+                                                });
                                             }}
                                         />
                                     </InputAdornment>
@@ -406,8 +412,10 @@ const Popup = () => {
                                                 if (!url) {
                                                     return;
                                                 }
-                                                let audio = new Audio(url);
-                                                audio.play();
+                                                chrome.runtime.sendMessage({
+                                                    queryBackground: 'playAudio',
+                                                    voiceUrl: url
+                                                });
                                             }}
                                         />
                                     </InputAdornment>

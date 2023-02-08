@@ -37,6 +37,7 @@ module.exports = {
             'warn',
             {
                 skipWords: [
+                    ...getWords('@types/chrome'),
                     ...getWords('video.js'),
                     ...getWords('@mui/system'),
                     ...getWords('react-icons/ai'),
@@ -78,7 +79,9 @@ module.exports = {
                     'videojs',
                     'vjs',
                     'srt',
-                    'autoplay'
+                    'autoplay',
+                    'offscreen',
+                    'msg'
                 ]
             }
         ]
