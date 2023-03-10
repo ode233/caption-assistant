@@ -100,7 +100,7 @@ const Popup = () => {
         // TODO: need lighter and faster phonetic api
         function getPhonetic(text: string) {
             return new Promise<string>((resolve) => {
-                if (!isWord(text)) {
+                if (!isEnWord(text)) {
                     resolve('');
                     return;
                 }
@@ -126,7 +126,7 @@ const Popup = () => {
                 return;
             }
             let text = getText();
-            if (!text) {
+            if (!isEnWord(text)) {
                 return;
             }
 
@@ -494,9 +494,13 @@ const Popup = () => {
     );
 };
 
-function isWord(text: string): boolean {
-    let regex = /^[a-zA-Z]+$/;
-    if (regex.test(text)) {
+let isEnWordRegex = /^[a-zA-Z]+$/;
+
+function isEnWord(text: string): boolean {
+    if (!text) {
+        return false;
+    }
+    if (isEnWordRegex.test(text)) {
         return true;
     }
     return false;
