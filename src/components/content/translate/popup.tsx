@@ -126,7 +126,7 @@ const Popup = () => {
                 return;
             }
             let text = getText();
-            if (!isEnWord(text)) {
+            if (!isEnSentence(text)) {
                 return;
             }
 
@@ -495,12 +495,24 @@ const Popup = () => {
 };
 
 let isEnWordRegex = /^[a-zA-Z]+$/;
+let isEnSentenceRegex = /^[a-zA-Z ]+$/;
 
 function isEnWord(text: string): boolean {
     if (!text) {
         return false;
     }
     if (isEnWordRegex.test(text)) {
+        return true;
+    }
+    return false;
+}
+
+function isEnSentence(sentence: string): boolean {
+    if (!sentence) {
+        return false;
+    }
+    let newSentence = sentence.trim();
+    if (isEnSentenceRegex.test(newSentence)) {
         return true;
     }
     return false;
